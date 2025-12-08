@@ -40,6 +40,7 @@ This project is built as a production-style React application to demonstrate fro
 - Subscription logic is mocked for demo purposes
 
 ## 📂 Project Structure
+```text
 src/
  ├─ components/
  ├─ pages/
@@ -50,6 +51,8 @@ src/
  ├─ types/
  ├─ utils/
  ├─ styles/
+ └─ main.tsx
+```
 
 ## ⚙️ Setup & Installation
 ```bash
