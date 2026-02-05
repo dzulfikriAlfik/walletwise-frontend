@@ -16,16 +16,32 @@ export const authService = {
    * Login user
    */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const { data } = await apiClient.post<AuthResponse>('/auth/login', credentials)
-    return data
+    const { data } = await apiClient.post<any>('/auth/login', credentials)
+    // Transform backend response to match frontend structure
+    return {
+      user: data.data.user,
+      tokens: {
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+        expiresIn: 15 * 60, // 15 minutes in seconds
+      },
+    }
   },
 
   /**
    * Register new user
    */
   register: async (userData: RegisterData): Promise<AuthResponse> => {
-    const { data } = await apiClient.post<AuthResponse>('/auth/register', userData)
-    return data
+    const { data } = await apiClient.post<any>('/auth/register', userData)
+    // Transform backend response to match frontend structure
+    return {
+      user: data.data.user,
+      tokens: {
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+        expiresIn: 15 * 60, // 15 minutes in seconds
+      },
+    }
   },
 
   /**
@@ -39,18 +55,26 @@ export const authService = {
    * Get current user profile
    */
   getProfile: async (): Promise<User> => {
-    const { data } = await apiClient.get<User>('/auth/profile')
-    return data
+    const { data } = await apiClient.get<any>('/auth/profile')
+    return data.data
   },
 
   /**
    * Refresh access token
    */
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const { data } = await apiClient.post<AuthResponse>('/auth/refresh', {
+    const { data } = await apiClient.post<any>('/auth/refresh', {
       refreshToken,
     })
-    return data
+    // Transform backend response to match frontend structure
+    return {
+      user: data.data.user,
+      tokens: {
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+        expiresIn: 15 * 60, // 15 minutes in seconds
+      },
+    }
   },
 
   /**
