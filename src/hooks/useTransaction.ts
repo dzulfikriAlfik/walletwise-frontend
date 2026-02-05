@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTransactionStore } from '@/stores/transaction.store'
 import { transactionService } from '@/services/transaction.service'
-import { QUERY_KEYS, PAGINATION } from '@/utils/constants'
+import { QUERY_KEYS } from '@/utils/constants'
 import type {
   CreateTransactionData,
   UpdateTransactionData,

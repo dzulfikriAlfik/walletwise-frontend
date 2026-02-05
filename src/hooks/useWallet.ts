@@ -12,7 +12,7 @@ import type { CreateWalletData, UpdateWalletData } from '@/types'
 
 export const useWallets = () => {
   const queryClient = useQueryClient()
-  const { wallets, setWallets, addWallet, updateWallet, removeWallet, setLoading } =
+  const { wallets, setWallets, addWallet, updateWallet, removeWallet } =
     useWalletStore()
   const { user } = useAuthStore()
 
