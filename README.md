@@ -43,16 +43,22 @@ This project is built as a production-style React application to demonstrate fro
 ```text
 src/
  ├─ components/
- ├─ pages/
- ├─ hooks/
- ├─ services/
- ├─ stores/
- ├─ routes/
- ├─ types/
- ├─ utils/
- ├─ styles/
+ │   ├─ ui/              # Atomic UI components (shadcn/ui)
+ │   ├─ layout/          # Layout components
+ │   └─ features/        # Feature-specific components
+ ├─ pages/               # Route pages
+ ├─ hooks/               # Custom React hooks
+ ├─ services/            # API calls & external services
+ ├─ stores/              # State management (Zustand)
+ ├─ routes/              # Route definitions
+ ├─ types/               # TypeScript type definitions
+ ├─ utils/               # Utility functions
+ ├─ lib/                 # Third-party configurations
+ ├─ styles/              # Global styles
  └─ main.tsx
 ```
+
+For detailed architecture documentation, see [docs/architecture.md](docs/architecture.md)
 
 ## ⚙️ Setup & Installation
 ```bash
