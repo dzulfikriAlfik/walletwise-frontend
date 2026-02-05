@@ -1,0 +1,110 @@
+/**
+ * Application constants
+ */
+
+import { SubscriptionTier, TransactionCategory } from '@/types'
+
+/**
+ * API Configuration
+ */
+export const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  TIMEOUT: 30000,
+} as const
+
+/**
+ * Local Storage Keys
+ */
+export const STORAGE_KEYS = {
+  AUTH_TOKEN: 'auth-token',
+  REFRESH_TOKEN: 'refresh-token',
+  USER_PREFERENCES: 'user-preferences',
+} as const
+
+/**
+ * Route Paths
+ */
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  DASHBOARD: '/dashboard',
+  WALLETS: '/wallets',
+  TRANSACTIONS: '/transactions',
+  BILLING: '/billing',
+  PROFILE: '/profile',
+  SETTINGS: '/settings',
+} as const
+
+/**
+ * Subscription Limits
+ */
+export const SUBSCRIPTION_LIMITS = {
+  [SubscriptionTier.FREE]: {
+    MAX_WALLETS: 3,
+  },
+  [SubscriptionTier.PRO]: {
+    MAX_WALLETS: null, // unlimited
+  },
+} as const
+
+/**
+ * Transaction Category Labels
+ */
+export const TRANSACTION_CATEGORY_LABELS: Record<TransactionCategory, string> = {
+  // Income
+  [TransactionCategory.SALARY]: 'Gaji',
+  [TransactionCategory.FREELANCE]: 'Freelance',
+  [TransactionCategory.INVESTMENT]: 'Investasi',
+  [TransactionCategory.OTHER_INCOME]: 'Pendapatan Lain',
+  
+  // Expense
+  [TransactionCategory.FOOD]: 'Makanan & Minuman',
+  [TransactionCategory.TRANSPORT]: 'Transportasi',
+  [TransactionCategory.ENTERTAINMENT]: 'Hiburan',
+  [TransactionCategory.BILLS]: 'Tagihan',
+  [TransactionCategory.SHOPPING]: 'Belanja',
+  [TransactionCategory.HEALTH]: 'Kesehatan',
+  [TransactionCategory.EDUCATION]: 'Pendidikan',
+  [TransactionCategory.OTHER_EXPENSE]: 'Pengeluaran Lain',
+}
+
+/**
+ * Currency Options
+ */
+export const CURRENCIES = [
+  { value: 'IDR', label: 'Rupiah (IDR)', symbol: 'Rp' },
+  { value: 'USD', label: 'US Dollar (USD)', symbol: '$' },
+  { value: 'EUR', label: 'Euro (EUR)', symbol: '€' },
+] as const
+
+/**
+ * Date Format Patterns
+ */
+export const DATE_FORMATS = {
+  SHORT: 'dd/MM/yyyy',
+  LONG: 'dd MMMM yyyy',
+  WITH_TIME: 'dd/MM/yyyy HH:mm',
+} as const
+
+/**
+ * Pagination Defaults
+ */
+export const PAGINATION = {
+  DEFAULT_PAGE: 1,
+  DEFAULT_LIMIT: 10,
+  PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
+} as const
+
+/**
+ * Query Keys for React Query
+ */
+export const QUERY_KEYS = {
+  AUTH: ['auth'],
+  USER: ['user'],
+  WALLETS: ['wallets'],
+  WALLET: (id: string) => ['wallet', id],
+  TRANSACTIONS: ['transactions'],
+  TRANSACTION: (id: string) => ['transaction', id],
+  SUBSCRIPTION: ['subscription'],
+} as const
