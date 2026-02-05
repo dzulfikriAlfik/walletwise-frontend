@@ -3,7 +3,7 @@
  * Base HTTP client with interceptors
  */
 
-import axios, { type AxiosInstance, AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import axios, { type AxiosInstance, AxiosError } from 'axios'
 import { API_CONFIG } from '@/utils/constants'
 import type { ApiError } from '@/types'
 
@@ -16,36 +16,8 @@ export const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important: send cookies with requests
 })
-
-/**
- * Request interceptor
- * Add auth token to requests
- */
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage or store
-    const authStorage = localStorage.getItem('auth-storage')
-    
-    if (authStorage) {
-      try {
-        const { state } = JSON.parse(authStorage)
-        const token = state?.tokens?.accessToken
-
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-      } catch (error) {
-        console.error('Failed to parse auth storage:', error)
-      }
-    }
-
-    return config
-  },
-  (error: AxiosError) => {
-    return Promise.reject(error)
-  }
-)
 
 /**
  * Response interceptor
@@ -60,10 +32,17 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized - Token expired
     if (error.response?.status === 401 && originalRequest) {
-      // TODO: Implement token refresh logic
-      // For now, clear auth and redirect to login
-      localStorage.removeItem('auth-storage')
-      window.location.href = '/login'
+      // Try to refresh token
+      try {
+        await apiClient.post('/auth/refresh')
+        // Retry original request
+        return apiClient(originalRequest)
+      } catch (refreshError) {
+        // Refresh failed, clear auth and redirect to login
+        localStorage.removeItem('auth-storage')
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
     }
 
     // Handle network errors

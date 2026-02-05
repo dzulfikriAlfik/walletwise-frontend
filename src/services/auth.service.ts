@@ -5,11 +5,50 @@
 
 import { apiClient } from './api/client'
 import type {
-  AuthResponse,
   LoginCredentials,
   RegisterData,
   User,
 } from '@/types'
+
+interface AuthResponse {
+  user: User
+}
+
+// Backend response structure
+interface BackendUser {
+  id: string
+  email: string
+  name: string
+  avatarUrl: string | null
+  subscription: {
+    tier: string
+    isActive: boolean
+    startDate?: string
+    endDate?: string | null
+  }
+  createdAt?: string
+  updatedAt?: string
+}
+
+// Transform backend user to frontend User type
+const transformUser = (backendUser: BackendUser): User => {
+  return {
+    profile: {
+      id: backendUser.id,
+      email: backendUser.email,
+      name: backendUser.name,
+      avatarUrl: backendUser.avatarUrl || undefined,
+      createdAt: backendUser.createdAt || new Date().toISOString(),
+      updatedAt: backendUser.updatedAt || new Date().toISOString(),
+    },
+    subscription: {
+      tier: backendUser.subscription.tier as 'free' | 'pro',
+      isActive: backendUser.subscription.isActive,
+      startDate: backendUser.subscription.startDate || new Date().toISOString(),
+      endDate: backendUser.subscription.endDate || undefined,
+    },
+  }
+}
 
 export const authService = {
   /**
@@ -17,14 +56,9 @@ export const authService = {
    */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const { data } = await apiClient.post<any>('/auth/login', credentials)
-    // Transform backend response to match frontend structure
+    // Backend now sets httpOnly cookies automatically
     return {
-      user: data.data.user,
-      tokens: {
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
-      },
+      user: transformUser(data.data.user),
     }
   },
 
@@ -33,14 +67,9 @@ export const authService = {
    */
   register: async (userData: RegisterData): Promise<AuthResponse> => {
     const { data } = await apiClient.post<any>('/auth/register', userData)
-    // Transform backend response to match frontend structure
+    // Backend now sets httpOnly cookies automatically
     return {
-      user: data.data.user,
-      tokens: {
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
-      },
+      user: transformUser(data.data.user),
     }
   },
 
@@ -56,25 +85,14 @@ export const authService = {
    */
   getProfile: async (): Promise<User> => {
     const { data } = await apiClient.get<any>('/auth/profile')
-    return data.data
+    return transformUser(data.data)
   },
 
   /**
    * Refresh access token
    */
-  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const { data } = await apiClient.post<any>('/auth/refresh', {
-      refreshToken,
-    })
-    // Transform backend response to match frontend structure
-    return {
-      user: data.data.user,
-      tokens: {
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
-      },
-    }
+  refreshToken: async (): Promise<void> => {
+    await apiClient.post('/auth/refresh')
   },
 
   /**

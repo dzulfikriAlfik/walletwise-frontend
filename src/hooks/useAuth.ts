@@ -19,7 +19,7 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      setAuth(data.user, data.tokens)
+      setAuth(data.user)
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
     },
   })
@@ -30,7 +30,7 @@ export const useAuth = () => {
   const registerMutation = useMutation({
     mutationFn: authService.register,
     onSuccess: (data) => {
-      setAuth(data.user, data.tokens)
+      setAuth(data.user)
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
     },
   })

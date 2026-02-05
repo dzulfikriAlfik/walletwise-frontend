@@ -31,6 +31,8 @@ export interface User {
   subscription: Subscription
 }
 
+// AuthTokens type kept for backward compatibility but no longer used in auth flow
+// Tokens are now stored in httpOnly cookies
 export interface AuthTokens {
   accessToken: string
   refreshToken: string
@@ -48,7 +50,7 @@ export interface RegisterData {
   name: string
 }
 
+// AuthResponse no longer includes tokens as they are handled via httpOnly cookies
 export interface AuthResponse {
   user: User
-  tokens: AuthTokens
 }

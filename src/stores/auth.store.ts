@@ -5,17 +5,16 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { User, AuthTokens } from '@/types'
+import type { User } from '@/types'
 
 interface AuthState {
   user: User | null
-  tokens: AuthTokens | null
   isAuthenticated: boolean
   isLoading: boolean
 }
 
 interface AuthActions {
-  setAuth: (user: User, tokens: AuthTokens) => void
+  setAuth: (user: User) => void
   clearAuth: () => void
   setLoading: (loading: boolean) => void
   updateUser: (user: Partial<User>) => void
@@ -28,15 +27,13 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       // Initial state
       user: null,
-      tokens: null,
       isAuthenticated: false,
       isLoading: false,
 
       // Actions
-      setAuth: (user, tokens) =>
+      setAuth: (user) =>
         set({
           user,
-          tokens,
           isAuthenticated: true,
           isLoading: false,
         }),
@@ -44,7 +41,6 @@ export const useAuthStore = create<AuthStore>()(
       clearAuth: () =>
         set({
           user: null,
-          tokens: null,
           isAuthenticated: false,
           isLoading: false,
         }),
@@ -61,7 +57,6 @@ export const useAuthStore = create<AuthStore>()(
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
     }

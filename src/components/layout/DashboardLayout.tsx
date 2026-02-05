@@ -49,7 +49,7 @@ export default function DashboardLayout() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
-                Welcome, <span className="font-medium text-gray-900">{user?.name}</span>
+                Welcome, <span className="font-medium text-gray-900">{user?.profile.name}</span>
               </div>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Logout
