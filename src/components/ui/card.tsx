@@ -1,6 +1,6 @@
 /**
  * Card Component
- * shadcn/ui card implementation
+ * Tailwind CSS implementation
  */
 
 import * as React from "react"

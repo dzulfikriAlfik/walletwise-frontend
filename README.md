@@ -43,7 +43,7 @@ This project is built as a production-style React application to demonstrate fro
 ```text
 src/
  ├─ components/
- │   ├─ ui/              # Atomic UI components (shadcn/ui)
+ │   ├─ ui/              # Atomic UI components (Tailwind CSS)
  │   ├─ layout/          # Layout components
  │   └─ features/        # Feature-specific components
  ├─ pages/               # Route pages

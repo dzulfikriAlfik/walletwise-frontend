@@ -1,6 +1,5 @@
 /**
  * Utility function for merging Tailwind classes
- * Used by shadcn/ui components
  */
 
 import { clsx, type ClassValue } from "clsx"

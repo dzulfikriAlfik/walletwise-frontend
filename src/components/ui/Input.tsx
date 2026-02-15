@@ -1,6 +1,6 @@
 /**
  * Input Component
- * shadcn/ui input implementation
+ * Tailwind CSS implementation
  */
 
 import * as React from "react"

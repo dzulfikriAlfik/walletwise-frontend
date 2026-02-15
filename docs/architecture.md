@@ -9,7 +9,7 @@ This document outlines the architecture and folder structure of WalletWise front
 ```
 src/
 ├── components/
-│   ├── ui/              # Atomic UI components (shadcn/ui)
+│   ├── ui/              # Atomic UI components (Tailwind CSS)
 │   │   ├── button.tsx
 │   │   ├── input.tsx
 │   │   ├── modal.tsx
@@ -79,7 +79,7 @@ Each module has one clear purpose:
 #### Files and Folders
 - **PascalCase**: Components and Pages (`DashboardLayout.tsx`)
 - **camelCase**: Services, stores, hooks, utils (`auth.service.ts`)
-- **kebab-case**: UI components from shadcn (`button.tsx`)
+- **kebab-case**: UI components (`button.tsx`, `card.tsx`)
 - **lowercase**: Folders (`components/`, `services/`)
 
 #### Code Naming
@@ -145,7 +145,7 @@ export const validateEmail = () => {...}
 ### 4. Component Architecture
 
 #### UI Components (`components/ui/`)
-- Atomic, reusable components from shadcn/ui
+- Atomic, reusable components with Tailwind CSS
 - No business logic
 - Accept props for customization
 - Focus on presentation only

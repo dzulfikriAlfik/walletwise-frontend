@@ -106,7 +106,7 @@ export default function Index() {
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-600">✓</span>
-                      Tailwind CSS + shadcn/ui
+                      Tailwind CSS
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-600">✓</span>
