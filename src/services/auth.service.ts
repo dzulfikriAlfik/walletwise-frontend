@@ -25,6 +25,7 @@ interface BackendUser {
     isActive: boolean
     startDate?: string
     endDate?: string | null
+    trialEndDate?: string | null
   }
   createdAt?: string
   updatedAt?: string
@@ -42,10 +43,11 @@ const transformUser = (backendUser: BackendUser): User => {
       updatedAt: backendUser.updatedAt || new Date().toISOString(),
     },
     subscription: {
-      tier: backendUser.subscription.tier as 'free' | 'pro',
+      tier: backendUser.subscription.tier as 'free' | 'pro' | 'pro_plus',
       isActive: backendUser.subscription.isActive,
       startDate: backendUser.subscription.startDate || new Date().toISOString(),
       endDate: backendUser.subscription.endDate || undefined,
+      trialEndDate: backendUser.subscription.trialEndDate || undefined,
     },
   }
 }

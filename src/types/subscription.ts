@@ -2,8 +2,6 @@
  * Subscription and billing-related type definitions
  */
 
-import { SubscriptionTier } from './user'
-
 export interface SubscriptionPlan {
   tier: SubscriptionTier
   name: string
@@ -37,8 +35,8 @@ export interface PaymentMethod {
   isDefault: boolean
 }
 
-export const SUBSCRIPTION_FEATURES: Record<SubscriptionTier, SubscriptionFeature[]> = {
-  [SubscriptionTier.FREE]: [
+export const SUBSCRIPTION_FEATURES: Record<string, SubscriptionFeature[]> = {
+  free: [
     { name: 'Up to 3 wallets', description: 'Create up to 3 wallets', included: true },
     { name: 'Transaction tracking', description: 'Track income and expenses', included: true },
     { name: 'Basic summary', description: 'View basic financial summary', included: true },
@@ -46,11 +44,17 @@ export const SUBSCRIPTION_FEATURES: Record<SubscriptionTier, SubscriptionFeature
     { name: 'Advanced analytics', description: 'Detailed financial insights', included: false },
     { name: 'Data export', description: 'Export data to CSV/Excel', included: false },
   ],
-  [SubscriptionTier.PRO]: [
-    { name: 'Up to 3 wallets', description: 'Create up to 3 wallets', included: true },
+  pro: [
+    { name: 'Unlimited wallets', description: 'Create unlimited wallets', included: true },
     { name: 'Transaction tracking', description: 'Track income and expenses', included: true },
     { name: 'Basic summary', description: 'View basic financial summary', included: true },
+    { name: '7-day free trial', description: 'Try Pro free for 7 days', included: true },
+    { name: 'Advanced analytics', description: 'Detailed financial insights', included: false },
+    { name: 'Data export', description: 'Export data to CSV/Excel', included: false },
+  ],
+  pro_plus: [
     { name: 'Unlimited wallets', description: 'Create unlimited wallets', included: true },
+    { name: 'Transaction tracking', description: 'Track income and expenses', included: true },
     { name: 'Advanced analytics', description: 'Detailed financial insights', included: true },
     { name: 'Data export', description: 'Export data to CSV/Excel', included: true },
   ],

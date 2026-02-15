@@ -10,6 +10,8 @@ import Login from '@/pages/Auth/Login'
 import Register from '@/pages/Auth/Register'
 import Index from '@/pages/Index'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import WalletsPage from '@/pages/Wallets/WalletsPage'
+import BillingPage from '@/pages/Billing/BillingPage'
 
 /**
  * Protected Route Component
@@ -85,7 +87,21 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div className="p-6"><h1 className="text-2xl font-bold">Wallets</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>,
+        element: <WalletsPage />,
+      },
+    ],
+  },
+  {
+    path: '/billing',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <BillingPage />,
       },
     ],
   },

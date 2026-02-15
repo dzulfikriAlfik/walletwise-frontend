@@ -45,6 +45,12 @@ export default function DashboardLayout() {
                 >
                   Transactions
                 </Link>
+                <Link
+                  to="/billing"
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  Billing
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">

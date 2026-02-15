@@ -38,13 +38,23 @@ export const ROUTES = {
 
 /**
  * Subscription Limits
+ * free: 3 wallets | pro: unlimited | pro_plus: unlimited + analytics + export
  */
 export const SUBSCRIPTION_LIMITS = {
   [SubscriptionTier.FREE]: {
     MAX_WALLETS: 3,
+    ANALYTICS: false,
+    EXPORT: false,
   },
   [SubscriptionTier.PRO]: {
     MAX_WALLETS: null, // unlimited
+    ANALYTICS: false,
+    EXPORT: false,
+  },
+  [SubscriptionTier.PRO_PLUS]: {
+    MAX_WALLETS: null, // unlimited
+    ANALYTICS: true,
+    EXPORT: true,
   },
 } as const
 

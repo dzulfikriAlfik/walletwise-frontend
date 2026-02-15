@@ -1,0 +1,263 @@
+/**
+ * Billing Page
+ * Subscription plans and dummy payment upgrade
+ */
+
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/Button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/Input'
+import { billingService, type BillingPlans } from '@/services/billing.service'
+import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/stores/auth.store'
+import { QUERY_KEYS } from '@/utils/constants'
+import { SubscriptionTier } from '@/types'
+
+export default function BillingPage() {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const updateUser = useAuthStore((s) => s.updateUser)
+
+  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'pro_plus' | null>(null)
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
+  const [useProTrial, setUseProTrial] = useState(true)
+
+  const { data: plans, isLoading } = useQuery({
+    queryKey: ['billing', 'plans'],
+    queryFn: billingService.getPlans,
+  })
+
+  const upgradeMutation = useMutation({
+    mutationFn: (params: { targetTier: 'pro' | 'pro_plus'; billingPeriod: 'monthly' | 'yearly'; useTrial?: boolean }) =>
+      billingService.dummyPayment({ targetTier: params.targetTier, billingPeriod: params.billingPeriod }),
+    onSuccess: (data, variables) => {
+      // Update user subscription in store
+      updateUser({
+        subscription: {
+          tier: data.subscription.tier as SubscriptionTier,
+          isActive: true,
+          startDate: data.subscription.startDate,
+          endDate: data.subscription.endDate || undefined,
+        },
+      })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
+      setSelectedPlan(null)
+    },
+  })
+
+  const currentTier = user?.subscription?.tier || 'free'
+
+  const handleUpgrade = (tier: 'pro' | 'pro_plus') => {
+    setSelectedPlan(tier)
+  }
+
+  const handleConfirmPayment = () => {
+    if (!selectedPlan) return
+    upgradeMutation.mutate({
+      targetTier: selectedPlan,
+      billingPeriod,
+      useTrial: selectedPlan === 'pro' ? useProTrial : false,
+    })
+  }
+
+  if (isLoading || !plans) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="text-gray-500">Loading plans...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Billing & Subscription</h1>
+        <p className="text-gray-600 mt-1">
+          Plan saat ini: <span className="font-medium capitalize">{currentTier.replace('_', '+')}</span>
+        </p>
+      </div>
+
+      {/* Billing period toggle */}
+      <div className="flex gap-2">
+        <Button
+          variant={billingPeriod === 'monthly' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setBillingPeriod('monthly')}
+        >
+          Bulanan
+        </Button>
+        <Button
+          variant={billingPeriod === 'yearly' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setBillingPeriod('yearly')}
+        >
+          Tahunan (hemat 17%)
+        </Button>
+      </div>
+
+      {/* Plans Grid */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Free Plan */}
+        <PlanCard
+          plan={plans.free}
+          currentTier={currentTier}
+          billingPeriod={billingPeriod}
+        />
+
+        {/* Pro Plan */}
+        <PlanCard
+          plan={plans.pro}
+          currentTier={currentTier}
+          billingPeriod={billingPeriod}
+          onUpgrade={() => handleUpgrade('pro')}
+          canUpgrade={currentTier === 'free'}
+        />
+
+        {/* Pro+ Plan */}
+        <PlanCard
+          plan={plans.pro_plus}
+          currentTier={currentTier}
+          billingPeriod={billingPeriod}
+          onUpgrade={() => handleUpgrade('pro_plus')}
+          canUpgrade={currentTier === 'free' || currentTier === 'pro'}
+        />
+      </div>
+
+      {/* Dummy Payment Modal */}
+      {selectedPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Dummy Payment</CardTitle>
+                <CardDescription>
+                  Simulasi pembayaran - klik Bayar untuk langsung upgrade
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Upgrade ke <strong className="capitalize">{selectedPlan.replace('_', '+')}</strong>{' '}
+                ({billingPeriod})
+              </p>
+
+              {selectedPlan === 'pro' && (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={useProTrial}
+                    onChange={(e) => setUseProTrial(e.target.checked)}
+                  />
+                  <span className="text-sm">Gunakan 7 hari free trial</span>
+                </label>
+              )}
+
+              <div className="space-y-2">
+                <Input placeholder="Nomor kartu dummy (4242...)" disabled />
+                <div className="flex gap-2">
+                  <Input placeholder="MM/YY" disabled />
+                  <Input placeholder="CVV" disabled />
+                </div>
+              </div>
+
+              {upgradeMutation.isError && (
+                <p className="text-sm text-red-600">
+                  {(upgradeMutation.error as { error?: { message?: string } })?.error?.message || 'Gagal'}
+                </p>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleConfirmPayment}
+                  disabled={upgradeMutation.isPending}
+                >
+                  {upgradeMutation.isPending ? 'Memproses...' : 'Bayar (Dummy)'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedPlan(null)}
+                  disabled={upgradeMutation.isPending}
+                >
+                  Batal
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PlanCard({
+  plan,
+  currentTier,
+  billingPeriod,
+  onUpgrade,
+  canUpgrade = false,
+}: {
+  plan: BillingPlans['free'] | (BillingPlans['pro'] & { prices?: { monthly: number; yearly: number } })
+  currentTier: string
+  billingPeriod: 'monthly' | 'yearly'
+  onUpgrade?: () => void
+  canUpgrade?: boolean
+}) {
+  const price = 'prices' in plan && plan.prices
+    ? billingPeriod === 'yearly'
+      ? plan.prices.yearly
+      : plan.prices.monthly
+    : 0
+
+  const isCurrent = plan.tier === currentTier
+
+  return (
+    <Card className={isCurrent ? 'border-blue-500 border-2' : ''}>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          {plan.name}
+          {isCurrent && (
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Aktif</span>
+          )}
+        </CardTitle>
+        <CardDescription>
+          {plan.maxWallets === null ? 'Unlimited wallets' : `Up to ${plan.maxWallets} wallets`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {price > 0 ? (
+          <div>
+            <span className="text-2xl font-bold">${price}</span>
+            <span className="text-gray-500">/{billingPeriod === 'yearly' ? 'year' : 'month'}</span>
+          </div>
+        ) : (
+          <div className="text-2xl font-bold">$0</div>
+        )}
+
+        <ul className="space-y-2 text-sm">
+          {plan.features.map((f, i) => (
+            <li key={i}>✓ {f}</li>
+          ))}
+        </ul>
+
+        {canUpgrade && onUpgrade && (
+          <Button
+            className="w-full"
+            variant={isCurrent ? 'outline' : 'default'}
+            onClick={onUpgrade}
+            disabled={isCurrent}
+          >
+            {isCurrent ? 'Plan Saat Ini' : 'Upgrade'}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  )
+}

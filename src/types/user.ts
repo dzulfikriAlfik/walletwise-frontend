@@ -6,6 +6,7 @@
 export const SubscriptionTier = {
   FREE: 'free',
   PRO: 'pro',
+  PRO_PLUS: 'pro_plus',
 } as const
 
 export type SubscriptionTier = typeof SubscriptionTier[keyof typeof SubscriptionTier]
@@ -14,6 +15,7 @@ export interface Subscription {
   tier: SubscriptionTier
   startDate: string
   endDate?: string
+  trialEndDate?: string
   isActive: boolean
 }
 
