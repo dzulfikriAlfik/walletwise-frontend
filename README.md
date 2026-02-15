@@ -108,4 +108,4 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-For detailed architecture, see [docs/architecture.md](docs/architecture.md)
+For detailed architecture, see [docs/architecture/architecture.md](docs/architecture/architecture.md)
