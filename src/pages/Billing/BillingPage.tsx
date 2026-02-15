@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
 import {
@@ -21,6 +22,7 @@ import { QUERY_KEYS } from '@/utils/constants'
 import { SubscriptionTier } from '@/types'
 
 export default function BillingPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const updateUser = useAuthStore((s) => s.updateUser)
@@ -37,7 +39,7 @@ export default function BillingPage() {
   const upgradeMutation = useMutation({
     mutationFn: (params: { targetTier: 'pro' | 'pro_plus'; billingPeriod: 'monthly' | 'yearly'; useTrial?: boolean }) =>
       billingService.dummyPayment({ targetTier: params.targetTier, billingPeriod: params.billingPeriod }),
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       // Update user subscription in store
       updateUser({
         subscription: {
@@ -71,7 +73,7 @@ export default function BillingPage() {
   if (isLoading || !plans) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">Loading plans...</div>
+        <div className="text-gray-500">{t('billing.loadingPlans')}</div>
       </div>
     )
   }
@@ -79,9 +81,9 @@ export default function BillingPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Billing & Subscription</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('billing.title')}</h1>
         <p className="text-gray-600 mt-1">
-          Plan saat ini: <span className="font-medium capitalize">{currentTier.replace('_', '+')}</span>
+          {t('billing.currentPlan')} <span className="font-medium capitalize">{currentTier.replace('_', '+')}</span>
         </p>
       </div>
 
@@ -92,14 +94,14 @@ export default function BillingPage() {
           size="sm"
           onClick={() => setBillingPeriod('monthly')}
         >
-          Bulanan
+          {t('billing.monthly')}
         </Button>
         <Button
           variant={billingPeriod === 'yearly' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setBillingPeriod('yearly')}
         >
-          Tahunan (hemat 17%)
+          {t('billing.yearly')}
         </Button>
       </div>
 
@@ -137,15 +139,15 @@ export default function BillingPage() {
           <Card className="max-w-md w-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Dummy Payment</CardTitle>
+                <CardTitle>{t('billing.dummyPayment')}</CardTitle>
                 <CardDescription>
-                  Simulasi pembayaran - klik Bayar untuk langsung upgrade
+                  {t('billing.dummyPaymentDesc')}
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600">
-                Upgrade ke <strong className="capitalize">{selectedPlan.replace('_', '+')}</strong>{' '}
+                {t('billing.upgradeTo')} <strong className="capitalize">{selectedPlan.replace('_', '+')}</strong>{' '}
                 ({billingPeriod})
               </p>
 
@@ -156,12 +158,12 @@ export default function BillingPage() {
                     checked={useProTrial}
                     onChange={(e) => setUseProTrial(e.target.checked)}
                   />
-                  <span className="text-sm">Gunakan 7 hari free trial</span>
+                  <span className="text-sm">{t('billing.useTrial')}</span>
                 </label>
               )}
 
               <div className="space-y-2">
-                <Input placeholder="Nomor kartu dummy (4242...)" disabled />
+                <Input placeholder={t('billing.cardPlaceholder')} disabled />
                 <div className="flex gap-2">
                   <Input placeholder="MM/YY" disabled />
                   <Input placeholder="CVV" disabled />
@@ -170,7 +172,7 @@ export default function BillingPage() {
 
               {upgradeMutation.isError && (
                 <p className="text-sm text-red-600">
-                  {(upgradeMutation.error as { error?: { message?: string } })?.error?.message || 'Gagal'}
+                  {(upgradeMutation.error as { error?: { message?: string } })?.error?.message || t('billing.paymentFailed')}
                 </p>
               )}
 
@@ -179,14 +181,14 @@ export default function BillingPage() {
                   onClick={handleConfirmPayment}
                   disabled={upgradeMutation.isPending}
                 >
-                  {upgradeMutation.isPending ? 'Memproses...' : 'Bayar (Dummy)'}
+                  {upgradeMutation.isPending ? t('common.processing') : t('billing.pay')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setSelectedPlan(null)}
                   disabled={upgradeMutation.isPending}
                 >
-                  Batal
+                  {t('common.cancel')}
                 </Button>
               </div>
             </CardContent>
@@ -210,6 +212,7 @@ function PlanCard({
   onUpgrade?: () => void
   canUpgrade?: boolean
 }) {
+  const { t } = useTranslation()
   const price = 'prices' in plan && plan.prices
     ? billingPeriod === 'yearly'
       ? plan.prices.yearly
@@ -224,18 +227,18 @@ function PlanCard({
         <CardTitle className="flex items-center justify-between">
           {plan.name}
           {isCurrent && (
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Aktif</span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{t('billing.active')}</span>
           )}
         </CardTitle>
         <CardDescription>
-          {plan.maxWallets === null ? 'Unlimited wallets' : `Up to ${plan.maxWallets} wallets`}
+          {plan.maxWallets === null ? t('billing.unlimitedWallets') : t('billing.walletsUpTo', { count: plan.maxWallets })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {price > 0 ? (
           <div>
             <span className="text-2xl font-bold">${price}</span>
-            <span className="text-gray-500">/{billingPeriod === 'yearly' ? 'year' : 'month'}</span>
+            <span className="text-gray-500">{billingPeriod === 'yearly' ? t('billing.perYear') : t('billing.perMonth')}</span>
           </div>
         ) : (
           <div className="text-2xl font-bold">$0</div>
@@ -254,7 +257,7 @@ function PlanCard({
             onClick={onUpgrade}
             disabled={isCurrent}
           >
-            {isCurrent ? 'Plan Saat Ini' : 'Upgrade'}
+            {isCurrent ? t('billing.planCurrent') : t('common.upgrade')}
           </Button>
         )}
       </CardContent>

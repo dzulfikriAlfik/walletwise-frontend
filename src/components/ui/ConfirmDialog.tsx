@@ -4,6 +4,7 @@
  */
 
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from './Button'
 
 interface ConfirmDialogProps {
@@ -24,11 +25,12 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmLabel = 'Ya',
-  cancelLabel = 'Batal',
+  confirmLabel = 'Yes',
+  cancelLabel = 'Cancel',
   variant = 'default',
   isLoading = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isLoading) onClose()
@@ -90,7 +92,7 @@ export function ConfirmDialog({
               onClick={onConfirm}
               disabled={isLoading}
             >
-              {isLoading ? 'Memproses...' : confirmLabel}
+              {isLoading ? t('common.processing') : confirmLabel}
             </Button>
           </div>
         </div>

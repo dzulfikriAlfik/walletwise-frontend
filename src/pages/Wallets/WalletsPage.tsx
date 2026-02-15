@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import {
   Card,
@@ -21,6 +22,7 @@ import { CURRENCIES } from '@/utils/constants'
 import { SubscriptionTier } from '@/types'
 
 export default function WalletsPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const {
     wallets,
@@ -31,7 +33,6 @@ export default function WalletsPage() {
     deleteWallet,
     canCreateWallet,
     walletLimit,
-    refetch,
   } = useWallets()
 
   const [isCreating, setIsCreating] = useState(false)
@@ -51,7 +52,7 @@ export default function WalletsPage() {
     e.preventDefault()
     setError('')
     if (!form.name.trim()) {
-      setError('Nama wallet wajib diisi')
+      setError(t('wallets.walletNameRequired'))
       return
     }
     try {
@@ -63,7 +64,7 @@ export default function WalletsPage() {
       setForm({ name: '', balance: 0, currency: 'USD' })
       setIsCreating(false)
     } catch (err: unknown) {
-      setError((err as { error?: { message?: string } })?.error?.message || 'Gagal membuat wallet')
+      setError((err as { error?: { message?: string } })?.error?.message || t('wallets.createFailed'))
     }
   }
 
@@ -73,7 +74,7 @@ export default function WalletsPage() {
       await updateWallet(id, { name, balance })
       setEditingId(null)
     } catch (err: unknown) {
-      setError((err as { error?: { message?: string } })?.error?.message || 'Gagal update wallet')
+      setError((err as { error?: { message?: string } })?.error?.message || t('wallets.updateFailed'))
     }
   }
 
@@ -89,7 +90,7 @@ export default function WalletsPage() {
       await deleteWallet(deleteTarget)
       setDeleteTarget(null)
     } catch (err: unknown) {
-      setError((err as { error?: { message?: string } })?.error?.message || 'Gagal menghapus wallet')
+      setError((err as { error?: { message?: string } })?.error?.message || t('wallets.deleteFailed'))
     } finally {
       setIsDeleting(false)
     }
@@ -108,7 +109,7 @@ export default function WalletsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">Loading wallets...</div>
+        <div className="text-gray-500">{t('common.loading')}</div>
       </div>
     )
   }
@@ -116,17 +117,17 @@ export default function WalletsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Wallets</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('wallets.title')}</h1>
         <p className="text-gray-600 mt-1">
-          Kelola wallet Anda. {tier === SubscriptionTier.FREE && (
+          {t('wallets.subtitle')} {tier === SubscriptionTier.FREE && (
             <span>
-              Limit: {walletLimit.current}/{walletLimit.max}
+              {t('wallets.subtitleLimit', { current: walletLimit.current, max: walletLimit.max })}
               {' '}
               <Link to="/billing" className="text-blue-600 hover:underline">
-                Upgrade ke Pro
+                {t('wallets.upgradePro')}
               </Link>
               {' '}
-              untuk unlimited.
+              {t('wallets.forUnlimited')}
             </span>
           )}
         </p>
@@ -136,9 +137,9 @@ export default function WalletsPage() {
       {summary && (
         <Card>
           <CardHeader>
-            <CardTitle>Total Balance</CardTitle>
+            <CardTitle>{t('wallets.totalBalance')}</CardTitle>
             <CardDescription>
-              Jumlah total dari {wallets.length} wallet
+              {t('wallets.totalFromWallets', { count: wallets.length })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -153,16 +154,16 @@ export default function WalletsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Daftar Wallet</CardTitle>
+            <CardTitle>{t('wallets.walletList')}</CardTitle>
             <CardDescription>
               {canCreateWallet
-                ? 'Buat wallet baru untuk memulai tracking'
-                : 'Limit tercapai. Upgrade ke Pro untuk wallet unlimited.'}
+                ? t('wallets.createNew')
+                : t('wallets.limitReached')}
             </CardDescription>
           </div>
           {canCreateWallet && !isCreating && (
             <Button onClick={() => setIsCreating(true)}>
-              + Tambah Wallet
+              {t('wallets.addWallet')}
             </Button>
           )}
         </CardHeader>
@@ -176,7 +177,7 @@ export default function WalletsPage() {
           {isCreating && (
             <form onSubmit={handleCreate} className="p-4 border rounded-lg bg-gray-50 space-y-3">
               <Input
-                placeholder="Nama wallet (min 3 karakter)"
+                placeholder={t('wallets.namePlaceholder')}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
@@ -186,7 +187,7 @@ export default function WalletsPage() {
                   type="number"
                   min={0}
                   step={0.01}
-                  placeholder="Saldo awal"
+                  placeholder={t('wallets.initialBalance')}
                   value={form.balance || ''}
                   onChange={(e) => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })}
                 />
@@ -201,9 +202,9 @@ export default function WalletsPage() {
                 </select>
               </div>
               <div className="flex gap-2">
-                <Button type="submit">Simpan</Button>
+                <Button type="submit">{t('common.save')}</Button>
                 <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
-                  Batal
+                  {t('common.cancel')}
                 </Button>
               </div>
             </form>
@@ -214,7 +215,7 @@ export default function WalletsPage() {
             {wallets.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p className="text-4xl mb-2">💰</p>
-                <p>Belum ada wallet. Buat wallet pertama Anda.</p>
+                <p>{t('wallets.noWallets')}</p>
               </div>
             ) : (
               wallets.map((wallet) => (
@@ -242,7 +243,7 @@ export default function WalletsPage() {
                           size="sm"
                           onClick={() => setEditingId(wallet.id)}
                         >
-                          Edit
+                          {t('common.edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -250,7 +251,7 @@ export default function WalletsPage() {
                           className="text-red-600 hover:text-red-700"
                           onClick={() => handleDeleteClick(wallet.id)}
                         >
-                          Hapus
+                          {t('common.delete')}
                         </Button>
                       </div>
                     </>
@@ -266,10 +267,10 @@ export default function WalletsPage() {
         open={!!deleteTarget}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        title="Hapus Wallet"
-        message="Hapus wallet ini? Semua transaksi di dalamnya akan ikut terhapus permanen."
-        confirmLabel="Hapus"
-        cancelLabel="Batal"
+        title={t('wallets.deleteTitle')}
+        message={t('wallets.deleteMessage')}
+        confirmLabel={t('wallets.deleteConfirm')}
+        cancelLabel={t('common.cancel')}
         variant="destructive"
         isLoading={isDeleting}
       />
@@ -286,6 +287,7 @@ function EditWalletForm({
   onSave: (name: string, balance: number) => void
   onCancel: () => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(wallet.name)
   const [balance, setBalance] = useState(wallet.balance)
 
@@ -305,10 +307,10 @@ function EditWalletForm({
         className="w-32"
       />
       <Button size="sm" onClick={() => onSave(name, balance)}>
-        Simpan
+        {t('common.save')}
       </Button>
       <Button size="sm" variant="outline" onClick={onCancel}>
-        Batal
+        {t('common.cancel')}
       </Button>
     </div>
   )

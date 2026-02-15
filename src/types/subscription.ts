@@ -2,6 +2,8 @@
  * Subscription and billing-related type definitions
  */
 
+import type { SubscriptionTier } from './user'
+
 export interface SubscriptionPlan {
   tier: SubscriptionTier
   name: string

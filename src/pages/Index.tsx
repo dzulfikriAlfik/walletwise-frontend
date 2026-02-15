@@ -3,30 +3,38 @@
  */
 
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LocaleSelector } from '@/components/LocaleSelector'
 
 export default function Index() {
+  const { t } = useTranslation()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header with locale selector */}
+      <div className="flex justify-end p-4">
+        <LocaleSelector />
+      </div>
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            WalletWise
+            {t('home.title')}
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Smart Budgeting & Expense Tracking Made Simple
+            {t('home.subtitle')}
           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/register">
               <Button size="lg" className="px-8">
-                Get Started Free
+                {t('home.getStarted')}
               </Button>
             </Link>
             <Link to="/login">
               <Button size="lg" variant="outline" className="px-8">
-                Sign In
+                {t('home.signIn')}
               </Button>
             </Link>
           </div>
@@ -38,15 +46,15 @@ export default function Index() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="text-2xl">💰</span>
-                Wallet Management
+                {t('home.feature1Title')}
               </CardTitle>
               <CardDescription>
-                Organize your finances with multiple wallets
+                {t('home.feature1Desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Create unlimited wallets to track different accounts, currencies, and financial goals.
+                {t('home.feature1Content')}
               </p>
             </CardContent>
           </Card>
@@ -55,15 +63,15 @@ export default function Index() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="text-2xl">📊</span>
-                Transaction Tracking
+                {t('home.feature2Title')}
               </CardTitle>
               <CardDescription>
-                Monitor every income and expense
+                {t('home.feature2Desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Categorize transactions, add notes, and get insights into your spending habits.
+                {t('home.feature2Content')}
               </p>
             </CardContent>
           </Card>
@@ -72,15 +80,15 @@ export default function Index() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="text-2xl">📈</span>
-                Analytics Dashboard
+                {t('home.feature3Title')}
               </CardTitle>
               <CardDescription>
-                Visualize your financial health
+                {t('home.feature3Desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Get real-time insights with beautiful charts and summaries of your finances.
+                {t('home.feature3Content')}
               </p>
             </CardContent>
           </Card>
@@ -90,15 +98,15 @@ export default function Index() {
         <div className="mt-16 max-w-4xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Built with Modern Technologies</CardTitle>
+              <CardTitle>{t('home.techTitle')}</CardTitle>
               <CardDescription>
-                Production-ready full-stack application
+                {t('home.techDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Frontend</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3">{t('home.frontend')}</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-center gap-2">
                       <span className="text-green-600">✓</span>
@@ -119,7 +127,7 @@ export default function Index() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Backend</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3">{t('home.backend')}</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-center gap-2">
                       <span className="text-green-600">✓</span>
@@ -149,14 +157,14 @@ export default function Index() {
           <Card className="max-w-2xl mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
             <CardContent className="py-8">
               <h2 className="text-3xl font-bold mb-4">
-                Ready to Take Control of Your Finances?
+                {t('home.ctaTitle')}
               </h2>
               <p className="text-blue-100 mb-6">
-                Start tracking your expenses and building better financial habits today.
+                {t('home.ctaSubtitle')}
               </p>
               <Link to="/register">
                 <Button size="lg" variant="secondary" className="px-8">
-                  Create Free Account
+                  {t('home.ctaButton')}
                 </Button>
               </Link>
             </CardContent>

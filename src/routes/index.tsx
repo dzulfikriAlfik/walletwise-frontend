@@ -10,8 +10,10 @@ import Login from '@/pages/Auth/Login'
 import Register from '@/pages/Auth/Register'
 import Index from '@/pages/Index'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import DashboardPage from '@/pages/Dashboard/DashboardPage'
 import WalletsPage from '@/pages/Wallets/WalletsPage'
 import BillingPage from '@/pages/Billing/BillingPage'
+import TransactionsPage from '@/pages/Transactions/TransactionsPage'
 
 /**
  * Protected Route Component
@@ -73,7 +75,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div className="p-6"><h1 className="text-2xl font-bold">Dashboard</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>,
+        element: <DashboardPage />,
       },
     ],
   },
@@ -115,7 +117,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div className="p-6"><h1 className="text-2xl font-bold">Transactions</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>,
+        element: <TransactionsPage />,
       },
     ],
   },

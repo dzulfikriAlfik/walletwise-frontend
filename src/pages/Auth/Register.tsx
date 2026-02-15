@@ -5,13 +5,16 @@
 
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/card'
+import { LocaleSelector } from '@/components/LocaleSelector'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { register, isLoading } = useAuth()
   
   const [formData, setFormData] = useState({
@@ -29,7 +32,7 @@ export default function Register() {
 
     // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: 'Passwords do not match' })
+      setErrors({ confirmPassword: t('auth.passwordsNoMatch') })
       return
     }
 
@@ -52,7 +55,7 @@ export default function Register() {
         setErrors(formattedErrors)
       } else {
         setErrors({
-          general: error?.error?.message || 'Registration failed. Please try again.',
+          general: error?.error?.message || t('auth.registerFailed'),
         })
       }
     }
@@ -73,10 +76,13 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
+      <div className="absolute top-4 right-4">
+        <LocaleSelector />
+      </div>
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-600">Start managing your finances today</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.registerTitle')}</h1>
+          <p className="text-gray-600">{t('auth.registerSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -88,7 +94,7 @@ export default function Register() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              {t('auth.fullName')}
             </label>
             <Input
               id="name"
@@ -96,7 +102,7 @@ export default function Register() {
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="John Doe"
+              placeholder={t('auth.namePlaceholder')}
               required
               className={errors.name ? 'border-red-500' : ''}
             />
@@ -107,7 +113,7 @@ export default function Register() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+              {t('auth.email')}
             </label>
             <Input
               id="email"
@@ -115,7 +121,7 @@ export default function Register() {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholderRegister')}
               required
               className={errors.email ? 'border-red-500' : ''}
             />
@@ -126,7 +132,7 @@ export default function Register() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              {t('auth.password')}
             </label>
             <Input
               id="password"
@@ -142,13 +148,13 @@ export default function Register() {
               <p className="mt-1 text-sm text-red-600">{errors.password}</p>
             )}
             <p className="mt-1 text-xs text-gray-500">
-              Must contain uppercase, lowercase, number, and special character (min 8 characters)
+              {t('auth.passwordHint')}
             </p>
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
+              {t('auth.confirmPassword')}
             </label>
             <Input
               id="confirmPassword"
@@ -166,15 +172,15 @@ export default function Register() {
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign in
+              {t('common.signIn')}
             </Link>
           </p>
         </div>

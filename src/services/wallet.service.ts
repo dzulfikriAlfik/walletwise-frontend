@@ -44,7 +44,7 @@ export const walletService = {
 
   getSummary: async (): Promise<WalletSummary> => {
     const { data } = await apiClient.get<ApiResponse<WalletSummary>>('/wallets/summary')
-    const d = data.data as Record<string, unknown>
+    const d = data.data as unknown as Record<string, unknown>
     return {
       totalBalance: d.totalBalance as number,
       walletCount: d.totalWallets as number,
