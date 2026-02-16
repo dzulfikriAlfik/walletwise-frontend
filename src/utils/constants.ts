@@ -4,12 +4,19 @@
 
 import { SubscriptionTier, TransactionCategory } from '@/types'
 
+/** Build mode: development | production */
+export const APP_MODE = import.meta.env.MODE
+
+/** Whether running in production (used when building with .env.production) */
+export const IS_PRODUCTION = APP_MODE === 'production'
+
 /**
  * API Configuration
+ * Values from .env (dev) or .env.production (prod build)
  */
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
-  TIMEOUT: 30000,
+  TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
 } as const
 
 /**

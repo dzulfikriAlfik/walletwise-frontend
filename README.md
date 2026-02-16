@@ -85,8 +85,15 @@ npm run dev
 App runs at `http://localhost:5173`
 
 ### Build for production
+
+Build uses `--mode production` and loads `.env.production`:
+
 ```bash
+# Production build (reads .env.production)
 npm run build
+
+# Development mode build (reads .env)
+npm run build:dev
 ```
 
 ### Preview production build
@@ -95,9 +102,17 @@ npm run preview
 ```
 
 ### Environment
-Create `.env` and set:
+
+| File | Used when |
+|------|-----------|
+| `.env` | `npm run dev`, `npm run build:dev` |
+| `.env.production` | `npm run build` |
+
+Copy `.env.example` to `.env` for development. For production build, copy `.env.production.example` to `.env.production`:
+
 ```
-VITE_API_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:3000/api   # Backend API base URL
+VITE_API_TIMEOUT=30000                         # Request timeout (ms, optional)
 ```
 
 ## Deployment Link
