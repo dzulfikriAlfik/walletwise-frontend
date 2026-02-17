@@ -137,14 +137,14 @@ sudo npm install -g pm2
 
 ### 7.2 Start the app with PM2
 
-**Option A: Using ecosystem.config.js (recommended)**
+**Option A: Using ecosystem.config.cjs (recommended)**
 
-The project includes `ecosystem.config.js` and `serve` as a local dependency. Run from project root:
+The project includes `ecosystem.config.cjs` and `serve` as a local dependency. Run from project root:
 
 ```bash
 cd /var/www/walletwise.pintarware.com
 
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Save process list
 pm2 save
@@ -260,7 +260,7 @@ pm2 restart walletwise-frontend
 
 | Issue | Solution |
 |-------|----------|
-| `File ecosystem.config.js not found` | Run from project root: `cd /var/www/walletwise.pintarware.com` then `pm2 start ecosystem.config.js`. Ensure `npm install` was run (adds `serve` dep). |
+| `File ecosystem.config.cjs not found` | Run from project root: `cd /var/www/walletwise.pintarware.com` then `pm2 start ecosystem.config.cjs`. Ensure `npm install` was run (adds `serve` dep). |
 | `Script not found: .../serve` | Run `npm install` to install local `serve`. Or use: `pm2 start $(which serve) --name walletwise-frontend -- -s dist -l 3001` with global serve. |
 | Still see "Welcome to nginx!" | Disable default site: `sudo rm -f /etc/nginx/sites-enabled/default` then `sudo systemctl reload nginx`. Ensure your site is enabled: `ls -la /etc/nginx/sites-enabled/` |
 | `403 Forbidden` | Check ownership: `sudo chown -R $USER:$USER /var/www/walletwise.pintarware.com` |
@@ -291,7 +291,7 @@ npm run build
 
 # 3. PM2
 sudo npm install -g pm2
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup
 

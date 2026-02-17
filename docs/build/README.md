@@ -15,7 +15,7 @@ Build and deploy documentation for WalletWise frontend.
 npm install
 cp .env.production.example .env.production   # Edit VITE_API_BASE_URL
 npm run build
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 # Nginx: walletwise.pintarware.com → proxy to port 3001
 # Disable default site: sudo rm -f /etc/nginx/sites-enabled/default
 ```

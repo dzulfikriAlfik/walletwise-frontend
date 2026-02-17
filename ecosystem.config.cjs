@@ -1,6 +1,6 @@
 /**
  * PM2 ecosystem config for WalletWise frontend
- * Run: pm2 start ecosystem.config.js
+ * Run: pm2 start ecosystem.config.cjs
  */
 module.exports = {
   apps: [
