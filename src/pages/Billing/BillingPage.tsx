@@ -74,7 +74,22 @@ export default function BillingPage() {
     },
   })
 
-  const currentTier = user?.subscription?.tier || 'free'
+  const rawTier = user?.subscription?.tier || 'free'
+  const subEndDate = user?.subscription?.endDate
+
+  // When pro_trial expired: display as Free, show upgrade buttons, but disable Free Trial
+  const effectiveDisplayTier =
+    rawTier === SubscriptionTier.PRO_TRIAL && subEndDate
+      ? (() => {
+          const end = new Date(subEndDate)
+          const now = new Date()
+          return !Number.isNaN(end.getTime()) && end.getTime() < now.getTime()
+            ? SubscriptionTier.FREE
+            : rawTier
+        })()
+      : rawTier
+
+  const hasUsedProTrial = rawTier === SubscriptionTier.PRO_TRIAL
 
   const handleUpgrade = (tier: 'pro_trial' | 'pro' | 'pro_plus') => {
     setSelectedPlan(tier)
@@ -109,7 +124,8 @@ export default function BillingPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">{t('billing.title')}</h1>
         <p className="text-gray-600 mt-1">
-          {t('billing.currentPlan')} <span className="font-medium capitalize">{currentTier.replace('_', '+')}</span>
+          {t('billing.currentPlan')}{' '}
+          <span className="font-medium capitalize">{effectiveDisplayTier.replace(/_/g, '+')}</span>
         </p>
       </div>
 
@@ -136,27 +152,30 @@ export default function BillingPage() {
         {/* Free Plan */}
         <PlanCard
           plan={plans.free}
-          currentTier={currentTier}
+          currentTier={rawTier}
+          effectiveDisplayTier={effectiveDisplayTier}
           billingPeriod={billingPeriod}
         />
 
         {/* Pro Plan */}
         <PlanCard
           plan={plans.pro}
-          currentTier={currentTier}
+          currentTier={rawTier}
+          effectiveDisplayTier={effectiveDisplayTier}
           billingPeriod={billingPeriod}
           onUpgrade={() => handleUpgrade('pro')}
-          onTrial={() => handleUpgrade('pro_trial')}
-          canUpgrade={currentTier === 'free'}
+          onTrial={!hasUsedProTrial ? () => handleUpgrade('pro_trial') : undefined}
+          canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE}
         />
 
         {/* Pro+ Plan */}
         <PlanCard
           plan={plans.pro_plus}
-          currentTier={currentTier}
+          currentTier={rawTier}
+          effectiveDisplayTier={effectiveDisplayTier}
           billingPeriod={billingPeriod}
           onUpgrade={() => handleUpgrade('pro_plus')}
-          canUpgrade={currentTier === 'free' || currentTier === 'pro'}
+          canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE || effectiveDisplayTier === SubscriptionTier.PRO}
         />
       </div>
 
@@ -245,6 +264,7 @@ export default function BillingPage() {
 function PlanCard({
   plan,
   currentTier,
+  effectiveDisplayTier,
   billingPeriod,
   onUpgrade,
   onTrial,
@@ -252,6 +272,7 @@ function PlanCard({
 }: {
   plan: BillingPlans['free'] | (BillingPlans['pro'] & { prices?: { monthly: number; yearly: number } })
   currentTier: string
+  effectiveDisplayTier: string
   billingPeriod: 'monthly' | 'yearly'
   onUpgrade?: () => void
   onTrial?: () => void
@@ -264,7 +285,10 @@ function PlanCard({
       : plan.prices.monthly
     : 0
 
-  const isCurrent = plan.tier === currentTier
+  const isCurrent =
+    plan.tier === 'free'
+      ? effectiveDisplayTier === 'free'
+      : plan.tier === currentTier
 
   return (
     <Card className={isCurrent ? 'border-blue-500 border-2' : ''}>
