@@ -76,6 +76,7 @@
     "walletList": "Daftar Wallet",
     "createNew": "Buat wallet baru untuk memulai tracking",
     "limitReached": "Limit tercapai. Upgrade ke Pro untuk wallet unlimited.",
+    "trialExpired": "Masa trial Pro Anda telah berakhir. Silakan upgrade ke Pro untuk wallet unlimited.",
     "addWallet": "+ Tambah Wallet",
     "walletNameRequired": "Nama wallet wajib diisi",
     "createFailed": "Gagal membuat wallet",
@@ -96,9 +97,11 @@
     "loadingPlans": "Memuat plan...",
     "dummyPayment": "Dummy Payment",
     "dummyPaymentDesc": "Simulasi pembayaran - klik Bayar untuk langsung upgrade",
-    "upgradeTo": "Upgrade ke",
+    "upgradeTo": "Upgrade ke {{tier}} ({{period}})",
+    "upgradeToProTrial": "Aktifkan Pro free trial {{days}} hari (tanpa pembayaran)",
     "useTrial": "Gunakan 7 hari free trial",
     "cardPlaceholder": "Nomor kartu dummy (4242...)",
+    "cardRequired": "Harap isi semua data pembayaran.",
     "pay": "Bayar (Dummy)",
     "paymentFailed": "Gagal",
     "active": "Aktif",
@@ -107,6 +110,11 @@
     "perMonth": "/bulan",
     "perYear": "/tahun",
     "planCurrent": "Plan Saat Ini"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "language": "Bahasa",
+    "currency": "Mata uang"
   },
   "dashboard": {
     "title": "Dashboard",

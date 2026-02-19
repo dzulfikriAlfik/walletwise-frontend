@@ -5,18 +5,27 @@
 
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
-import { LocaleSelector } from '@/components/LocaleSelector'
 import { useAuth } from '@/hooks/useAuth'
+import { SettingsDropdown } from '@/components/SettingsDropdown'
+import { QUERY_KEYS } from '@/utils/constants'
 
 export default function DashboardLayout() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, logout } = useAuth()
+  const queryClient = useQueryClient()
 
   const handleLogout = async () => {
     await logout()
     navigate('/login')
+  }
+
+  const handleWalletsNavClick = () => {
+    // Refresh user subscription and wallets when navigating to Wallets
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
   }
 
   return (
@@ -38,6 +47,7 @@ export default function DashboardLayout() {
                 </Link>
                 <Link
                   to="/wallets"
+                  onClick={handleWalletsNavClick}
                   className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   {t('nav.wallets')}
@@ -57,10 +67,10 @@ export default function DashboardLayout() {
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <LocaleSelector />
               <div className="text-sm text-gray-600">
                 {t('nav.welcome', { name: user?.profile.name })}
               </div>
+              <SettingsDropdown />
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 {t('common.logout')}
               </Button>

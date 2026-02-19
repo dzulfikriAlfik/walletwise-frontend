@@ -12,6 +12,12 @@ export interface Wallet {
   icon?: string
   createdAt: string
   updatedAt: string
+  /**
+   * When Pro trial expires, wallets created during trial
+   * above the free limit can be marked as frozen extras.
+   * They are excluded from total balance and cannot be edited.
+   */
+  isFrozenExtra?: boolean
 }
 
 export interface CreateWalletData {

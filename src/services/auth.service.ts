@@ -20,12 +20,13 @@ interface BackendUser {
   email: string
   name: string
   avatarUrl: string | null
+  preferredLanguage?: string | null
+  preferredCurrency?: string | null
   subscription: {
     tier: string
     isActive: boolean
     startDate?: string
     endDate?: string | null
-    trialEndDate?: string | null
   }
   createdAt?: string
   updatedAt?: string
@@ -33,6 +34,9 @@ interface BackendUser {
 
 // Transform backend user to frontend User type
 const transformUser = (backendUser: BackendUser): User => {
+  const language = backendUser.preferredLanguage === 'id' ? 'id' : 'en'
+  const currency = backendUser.preferredCurrency === 'IDR' ? 'IDR' : 'USD'
+
   return {
     profile: {
       id: backendUser.id,
@@ -43,11 +47,14 @@ const transformUser = (backendUser: BackendUser): User => {
       updatedAt: backendUser.updatedAt || new Date().toISOString(),
     },
     subscription: {
-      tier: backendUser.subscription.tier as 'free' | 'pro' | 'pro_plus',
+      tier: backendUser.subscription.tier as 'free' | 'pro_trial' | 'pro' | 'pro_plus',
       isActive: backendUser.subscription.isActive,
       startDate: backendUser.subscription.startDate || new Date().toISOString(),
       endDate: backendUser.subscription.endDate || undefined,
-      trialEndDate: backendUser.subscription.trialEndDate || undefined,
+    },
+    settings: {
+      language,
+      currency,
     },
   }
 }
@@ -87,6 +94,21 @@ export const authService = {
    */
   getProfile: async (): Promise<User> => {
     const { data } = await apiClient.get<any>('/auth/profile')
+    return transformUser(data.data)
+  },
+
+  /**
+   * Update user settings (language, currency)
+   */
+  updateSettings: async (settings: {
+    language: 'en' | 'id'
+    currency: 'USD' | 'IDR'
+  }): Promise<User> => {
+    const payload = {
+      preferredLanguage: settings.language,
+      preferredCurrency: settings.currency,
+    }
+    const { data } = await apiClient.patch<any>('/auth/profile', payload)
     return transformUser(data.data)
   },
 

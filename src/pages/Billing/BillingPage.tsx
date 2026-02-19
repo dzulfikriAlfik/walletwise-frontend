@@ -27,9 +27,12 @@ export default function BillingPage() {
   const { user } = useAuth()
   const updateUser = useAuthStore((s) => s.updateUser)
 
-  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'pro_plus' | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<'pro_trial' | 'pro' | 'pro_plus' | null>(null)
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
-  const [useProTrial, setUseProTrial] = useState(true)
+  const [cardNumber, setCardNumber] = useState('')
+  const [expiry, setExpiry] = useState('')
+  const [cvv, setCvv] = useState('')
+  const [formError, setFormError] = useState('')
 
   const { data: plans, isLoading } = useQuery({
     queryKey: ['billing', 'plans'],
@@ -37,8 +40,20 @@ export default function BillingPage() {
   })
 
   const upgradeMutation = useMutation({
-    mutationFn: (params: { targetTier: 'pro' | 'pro_plus'; billingPeriod: 'monthly' | 'yearly'; useTrial?: boolean }) =>
-      billingService.dummyPayment({ targetTier: params.targetTier, billingPeriod: params.billingPeriod }),
+    mutationFn: (params: {
+      targetTier: 'pro_trial' | 'pro' | 'pro_plus'
+      billingPeriod: 'monthly' | 'yearly'
+      cardNumber: string
+      expiry: string
+      cvv: string
+    }) =>
+      billingService.dummyPayment({
+        targetTier: params.targetTier,
+        billingPeriod: params.billingPeriod,
+        cardNumber: params.cardNumber,
+        expiry: params.expiry,
+        cvv: params.cvv,
+      }),
     onSuccess: (data) => {
       // Update user subscription in store
       updateUser({
@@ -52,21 +67,32 @@ export default function BillingPage() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
       setSelectedPlan(null)
+      setCardNumber('')
+      setExpiry('')
+      setCvv('')
+      setFormError('')
     },
   })
 
   const currentTier = user?.subscription?.tier || 'free'
 
-  const handleUpgrade = (tier: 'pro' | 'pro_plus') => {
+  const handleUpgrade = (tier: 'pro_trial' | 'pro' | 'pro_plus') => {
     setSelectedPlan(tier)
   }
 
   const handleConfirmPayment = () => {
     if (!selectedPlan) return
+    if (!cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
+      setFormError(t('billing.cardRequired'))
+      return
+    }
+    setFormError('')
     upgradeMutation.mutate({
       targetTier: selectedPlan,
       billingPeriod,
-      useTrial: selectedPlan === 'pro' ? useProTrial : false,
+      cardNumber,
+      expiry,
+      cvv,
     })
   }
 
@@ -120,6 +146,7 @@ export default function BillingPage() {
           currentTier={currentTier}
           billingPeriod={billingPeriod}
           onUpgrade={() => handleUpgrade('pro')}
+          onTrial={() => handleUpgrade('pro_trial')}
           canUpgrade={currentTier === 'free'}
         />
 
@@ -147,28 +174,44 @@ export default function BillingPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600">
-                {t('billing.upgradeTo')} <strong className="capitalize">{selectedPlan.replace('_', '+')}</strong>{' '}
-                ({billingPeriod})
+                {selectedPlan === 'pro_trial'
+                  ? t('billing.upgradeToProTrial', { days: plans.pro.trialDays })
+                  : t('billing.upgradeTo', {
+                      tier: selectedPlan.replace('_', '+'),
+                      period: billingPeriod,
+                    })}
               </p>
-
-              {selectedPlan === 'pro' && (
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={useProTrial}
-                    onChange={(e) => setUseProTrial(e.target.checked)}
-                  />
-                  <span className="text-sm">{t('billing.useTrial')}</span>
-                </label>
-              )}
-
               <div className="space-y-2">
-                <Input placeholder={t('billing.cardPlaceholder')} disabled />
+                <Input
+                  placeholder={t('billing.cardPlaceholder')}
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  autoComplete="off"
+                  required
+                />
                 <div className="flex gap-2">
-                  <Input placeholder="MM/YY" disabled />
-                  <Input placeholder="CVV" disabled />
+                  <Input
+                    placeholder="MM/YY"
+                    value={expiry}
+                    onChange={(e) => setExpiry(e.target.value)}
+                    autoComplete="off"
+                    required
+                  />
+                  <Input
+                    placeholder="CVV"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    autoComplete="off"
+                    required
+                  />
                 </div>
               </div>
+
+              {formError && (
+                <p className="text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
 
               {upgradeMutation.isError && (
                 <p className="text-sm text-red-600">
@@ -204,12 +247,14 @@ function PlanCard({
   currentTier,
   billingPeriod,
   onUpgrade,
+  onTrial,
   canUpgrade = false,
 }: {
   plan: BillingPlans['free'] | (BillingPlans['pro'] & { prices?: { monthly: number; yearly: number } })
   currentTier: string
   billingPeriod: 'monthly' | 'yearly'
   onUpgrade?: () => void
+  onTrial?: () => void
   canUpgrade?: boolean
 }) {
   const { t } = useTranslation()
@@ -250,15 +295,29 @@ function PlanCard({
           ))}
         </ul>
 
-        {canUpgrade && onUpgrade && (
-          <Button
-            className="w-full"
-            variant={isCurrent ? 'outline' : 'default'}
-            onClick={onUpgrade}
-            disabled={isCurrent}
-          >
-            {isCurrent ? t('billing.planCurrent') : t('common.upgrade')}
-          </Button>
+        {canUpgrade && (onUpgrade || onTrial) && (
+          <div className="flex flex-col gap-2">
+            {onTrial && plan.tier === 'pro' && (
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={onTrial}
+                disabled={isCurrent}
+              >
+                {t('billing.useTrial')}
+              </Button>
+            )}
+            {onUpgrade && (
+              <Button
+                className="w-full"
+                variant={isCurrent ? 'outline' : 'default'}
+                onClick={onUpgrade}
+                disabled={isCurrent}
+              >
+                {isCurrent ? t('billing.planCurrent') : t('common.upgrade')}
+              </Button>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

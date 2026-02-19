@@ -9,6 +9,7 @@ import { walletService } from '@/services/wallet.service'
 import { QUERY_KEYS, SUBSCRIPTION_LIMITS } from '@/utils/constants'
 import { useAuthStore } from '@/stores/auth.store'
 import type { CreateWalletData, UpdateWalletData } from '@/types'
+import { SubscriptionTier } from '@/types'
 
 export const useWallets = () => {
   const queryClient = useQueryClient()
@@ -28,13 +29,8 @@ export const useWallets = () => {
     },
   })
 
-  /**
-   * Get wallet summary query
-   */
-  const summaryQuery = useQuery({
-    queryKey: [...QUERY_KEYS.WALLETS, 'summary'],
-    queryFn: walletService.getSummary,
-  })
+  // Wallet summary is derived on the client from wallets to support
+  // Pro trial behaviour (excluding frozen wallets) – no extra API call here.
 
   /**
    * Create wallet mutation
@@ -71,18 +67,43 @@ export const useWallets = () => {
   })
 
   /**
+   * Determine effective subscription tier for wallet limits.
+   * When Pro trial has expired, treat as Free for creation limits.
+   */
+  const getEffectiveTierForLimits = (): SubscriptionTier => {
+    if (!user) return SubscriptionTier.FREE
+    const sub = user.subscription
+    const tier = (sub?.tier || 'free') as SubscriptionTier
+
+    // Pro trial: unlimited only when endDate is in the future; treat as free when expired
+    if (tier === SubscriptionTier.PRO_TRIAL) {
+      const endStr = sub?.endDate
+      if (endStr) {
+        const end = new Date(endStr)
+        const now = new Date()
+        if (!Number.isNaN(end.getTime()) && end.getTime() < now.getTime()) {
+          return SubscriptionTier.FREE
+        }
+      }
+      return SubscriptionTier.PRO_TRIAL
+    }
+
+    return tier
+  }
+
+  /**
    * Check if user can create more wallets
    */
   const canCreateWallet = (): boolean => {
     if (!user) return false
 
-    const tier = user.subscription.tier
-    const maxWallets = SUBSCRIPTION_LIMITS[tier].MAX_WALLETS
+    const effectiveTier = getEffectiveTierForLimits()
+    const maxWallets = SUBSCRIPTION_LIMITS[effectiveTier].MAX_WALLETS
 
-    // Unlimited for Pro users
+    // Unlimited for Pro / active Pro trial / Pro+ users
     if (maxWallets === null) return true
 
-    // Check limit for Free users
+    // Check limit when there is a numeric cap
     return wallets.length < maxWallets
   }
 
@@ -92,8 +113,8 @@ export const useWallets = () => {
   const getWalletLimit = () => {
     if (!user) return { current: 0, max: 0, canCreate: false }
 
-    const tier = user.subscription.tier
-    const maxWallets = SUBSCRIPTION_LIMITS[tier].MAX_WALLETS
+    const effectiveTier = getEffectiveTierForLimits()
+    const maxWallets = SUBSCRIPTION_LIMITS[effectiveTier].MAX_WALLETS
 
     return {
       current: wallets.length,
@@ -119,7 +140,7 @@ export const useWallets = () => {
 
   return {
     wallets,
-    summary: summaryQuery.data,
+    summary: undefined,
     isLoading: walletsQuery.isLoading,
     createWallet,
     updateWallet: updateWalletById,

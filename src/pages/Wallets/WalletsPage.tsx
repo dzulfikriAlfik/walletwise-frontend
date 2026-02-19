@@ -3,7 +3,7 @@
  * Wallet management with subscription-based limits
  */
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
@@ -16,14 +16,21 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useQueryClient } from '@tanstack/react-query'
 import { useWallets } from '@/hooks/useWallet'
 import { useAuth } from '@/hooks/useAuth'
-import { CURRENCIES } from '@/utils/constants'
+import { CURRENCIES, FX_RATES, QUERY_KEYS, SUBSCRIPTION_LIMITS } from '@/utils/constants'
 import { SubscriptionTier } from '@/types'
 
 export default function WalletsPage() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
+
+  // Force refetch profile on mount so subscription (incl. pro_trial endDate) is always fresh
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+  }, [queryClient])
   const {
     wallets,
     summary,
@@ -47,6 +54,57 @@ export default function WalletsPage() {
   const [error, setError] = useState('')
 
   const tier = user?.subscription?.tier || 'free'
+  const selectedCurrency = (user?.settings?.currency || 'USD') as 'USD' | 'IDR'
+
+  const frozenWalletIds = useMemo(() => {
+    if (!user) return new Set<string>()
+
+    const sub = user.subscription
+    if (sub.tier !== SubscriptionTier.PRO_TRIAL || !sub.endDate) {
+      return new Set<string>()
+    }
+
+    const now = new Date()
+    const endDate = new Date(sub.endDate)
+    if (endDate > now) {
+      // Trial still active – nothing frozen
+      return new Set<string>()
+    }
+
+    const trialStart = new Date(sub.startDate)
+    const freeLimit = SUBSCRIPTION_LIMITS[SubscriptionTier.FREE].MAX_WALLETS ?? 3
+
+    // Determine which wallets are above the free limit and created during trial
+    const sorted = [...wallets].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    )
+
+    const extraAfterFreeLimit = sorted.slice(freeLimit)
+    const frozen = extraAfterFreeLimit.filter((w) => new Date(w.createdAt) >= trialStart)
+
+    return new Set<string>(frozen.map((w) => w.id))
+  }, [user, wallets])
+
+  const walletsWithFlags = useMemo(
+    () =>
+      wallets.map((w) => ({
+        ...w,
+        isFrozenExtra: frozenWalletIds.has(w.id),
+      })),
+    [wallets, frozenWalletIds],
+  )
+
+  const effectiveTotalBalance = useMemo(() => {
+    // Convert each wallet balance to selectedCurrency via USD as base
+    return wallets.reduce((sum, w) => {
+      if (frozenWalletIds.has(w.id)) return sum
+      const fromRate = FX_RATES[w.currency as 'USD' | 'IDR'] ?? 1
+      const toRate = FX_RATES[selectedCurrency] ?? 1
+      const amountInUsd = w.balance / fromRate
+      const amountInSelected = amountInUsd * toRate
+      return sum + amountInSelected
+    }, 0)
+  }, [wallets, frozenWalletIds, selectedCurrency])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +122,16 @@ export default function WalletsPage() {
       setForm({ name: '', balance: 0, currency: 'USD' })
       setIsCreating(false)
     } catch (err: unknown) {
-      setError((err as { error?: { message?: string } })?.error?.message || t('wallets.createFailed'))
+      const apiErr = err as { error?: { code?: string; message?: string } }
+      const isTrialExpired = apiErr?.error?.code === 'PRO_TRIAL_EXPIRED'
+      setError(
+        isTrialExpired ? t('wallets.trialExpired') : apiErr?.error?.message || t('wallets.createFailed')
+      )
+      if (isTrialExpired) {
+        setIsCreating(false)
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
+      }
     }
   }
 
@@ -134,7 +201,7 @@ export default function WalletsPage() {
       </div>
 
       {/* Summary Card */}
-      {summary && (
+      {wallets.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('wallets.totalBalance')}</CardTitle>
@@ -144,7 +211,7 @@ export default function WalletsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-gray-900">
-              {formatCurrency(summary.totalBalance, 'USD')}
+              {formatCurrency(effectiveTotalBalance, selectedCurrency)}
             </p>
           </CardContent>
         </Card>
@@ -218,12 +285,12 @@ export default function WalletsPage() {
                 <p>{t('wallets.noWallets')}</p>
               </div>
             ) : (
-              wallets.map((wallet) => (
+              walletsWithFlags.map((wallet) => (
                 <div
                   key={wallet.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
                 >
-                  {editingId === wallet.id ? (
+                  {editingId === wallet.id && !wallet.isFrozenExtra ? (
                     <EditWalletForm
                       wallet={wallet}
                       onSave={(name, balance) => handleUpdate(wallet.id, name, balance)}
@@ -238,13 +305,15 @@ export default function WalletsPage() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingId(wallet.id)}
-                        >
-                          {t('common.edit')}
-                        </Button>
+                        {!wallet.isFrozenExtra && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingId(wallet.id)}
+                          >
+                            {t('common.edit')}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"

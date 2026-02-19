@@ -31,7 +31,6 @@ export interface UpgradeResult {
     isActive: boolean
     startDate: string
     endDate: string | null
-    trialEndDate: string | null
   }
   payment: {
     amount: number
@@ -48,7 +47,7 @@ export const billingService = {
   },
 
   upgrade: async (params: {
-    targetTier: 'pro' | 'pro_plus'
+    targetTier: 'pro_trial' | 'pro' | 'pro_plus'
     billingPeriod?: 'monthly' | 'yearly'
     useTrial?: boolean
   }): Promise<UpgradeResult> => {
@@ -57,8 +56,11 @@ export const billingService = {
   },
 
   dummyPayment: async (params: {
-    targetTier: 'pro' | 'pro_plus'
+    targetTier: 'pro_trial' | 'pro' | 'pro_plus'
     billingPeriod?: 'monthly' | 'yearly'
+    cardNumber: string
+    expiry: string
+    cvv: string
   }): Promise<UpgradeResult & { paymentStatus: string; transactionId: string }> => {
     const { data } = await apiClient.post<ApiResponse<UpgradeResult & { paymentStatus: string; transactionId: string }>>(
       '/billing/dummy-payment',

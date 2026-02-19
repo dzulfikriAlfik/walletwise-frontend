@@ -5,6 +5,7 @@
 
 export const SubscriptionTier = {
   FREE: 'free',
+  PRO_TRIAL: 'pro_trial',
   PRO: 'pro',
   PRO_PLUS: 'pro_plus',
 } as const
@@ -14,8 +15,7 @@ export type SubscriptionTier = typeof SubscriptionTier[keyof typeof Subscription
 export interface Subscription {
   tier: SubscriptionTier
   startDate: string
-  endDate?: string
-  trialEndDate?: string
+  endDate?: string // Subscription/trial expiry (used for pro_trial and paid plans)
   isActive: boolean
 }
 
@@ -28,9 +28,17 @@ export interface UserProfile {
   updatedAt: string
 }
 
+export type SupportedCurrency = 'USD' | 'IDR'
+
+export interface UserSettings {
+  language: 'en' | 'id'
+  currency: SupportedCurrency
+}
+
 export interface User {
   profile: UserProfile
   subscription: Subscription
+  settings: UserSettings
 }
 
 // AuthTokens type kept for backward compatibility but no longer used in auth flow

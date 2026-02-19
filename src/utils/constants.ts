@@ -45,11 +45,19 @@ export const ROUTES = {
 
 /**
  * Subscription Limits
- * free: 3 wallets | pro: unlimited | pro_plus: unlimited + analytics + export
+ * free: 3 wallets
+ * pro_trial: unlimited (while trial active)
+ * pro: unlimited
+ * pro_plus: unlimited + analytics + export
  */
 export const SUBSCRIPTION_LIMITS = {
   [SubscriptionTier.FREE]: {
     MAX_WALLETS: 3,
+    ANALYTICS: false,
+    EXPORT: false,
+  },
+  [SubscriptionTier.PRO_TRIAL]: {
+    MAX_WALLETS: null, // unlimited during active trial (handled via trial dates)
     ANALYTICS: false,
     EXPORT: false,
   },
@@ -94,6 +102,15 @@ export const CURRENCIES = [
   { value: 'USD', label: 'US Dollar (USD)', symbol: '$' },
   { value: 'EUR', label: 'Euro (EUR)', symbol: '€' },
 ] as const
+
+/**
+ * Approximate FX rates relative to USD
+ * 1 USD = FX_RATES[code] units of that currency
+ */
+export const FX_RATES = {
+  USD: 1,
+  IDR: 15000,
+} as const
 
 /**
  * Date Format Patterns

@@ -3,6 +3,7 @@
  * Provides authentication functionality
  */
 
+import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth.store'
 import { authService } from '@/services/auth.service'
@@ -53,7 +54,15 @@ export const useAuth = () => {
     queryKey: QUERY_KEYS.USER,
     queryFn: authService.getProfile,
     enabled: isAuthenticated,
+    staleTime: 0, // Always refetch on mount/refocus so subscription state stays fresh
   })
+
+  // Sync profile to auth store so useWallet and others see fresh subscription (e.g. trial expiry)
+  useEffect(() => {
+    if (profile) {
+      setAuth(profile)
+    }
+  }, [profile, setAuth])
 
   const login = async (credentials: LoginCredentials) => {
     setLoading(true)

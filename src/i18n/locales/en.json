@@ -76,6 +76,7 @@
     "walletList": "Wallet List",
     "createNew": "Create new wallet to start tracking",
     "limitReached": "Limit reached. Upgrade to Pro for unlimited wallets.",
+    "trialExpired": "Your Pro trial has ended. Please upgrade to Pro for unlimited wallets.",
     "addWallet": "+ Add Wallet",
     "walletNameRequired": "Wallet name is required",
     "createFailed": "Failed to create wallet",
@@ -96,9 +97,11 @@
     "loadingPlans": "Loading plans...",
     "dummyPayment": "Dummy Payment",
     "dummyPaymentDesc": "Payment simulation - click Pay to upgrade immediately",
-    "upgradeTo": "Upgrade to",
+    "upgradeTo": "Upgrade to {{tier}} ({{period}})",
+    "upgradeToProTrial": "Activate Pro {{days}}-day free trial (no payment)",
     "useTrial": "Use 7-day free trial",
     "cardPlaceholder": "Dummy card number (4242...)",
+    "cardRequired": "Please fill all payment fields.",
     "pay": "Pay (Dummy)",
     "paymentFailed": "Failed",
     "active": "Active",
@@ -107,6 +110,11 @@
     "perMonth": "/month",
     "perYear": "/year",
     "planCurrent": "Current Plan"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "currency": "Currency"
   },
   "dashboard": {
     "title": "Dashboard",
