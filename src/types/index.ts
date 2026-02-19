@@ -7,6 +7,7 @@ export type {
   User,
   UserProfile,
   Subscription,
+  SupportedCurrency,
   AuthTokens,
   LoginCredentials,
   RegisterData,

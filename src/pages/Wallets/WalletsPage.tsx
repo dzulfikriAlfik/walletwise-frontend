@@ -33,7 +33,6 @@ export default function WalletsPage() {
   }, [queryClient])
   const {
     wallets,
-    summary,
     isLoading,
     createWallet,
     updateWallet,
