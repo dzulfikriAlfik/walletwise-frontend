@@ -35,7 +35,9 @@ interface BackendUser {
 // Transform backend user to frontend User type
 const transformUser = (backendUser: BackendUser): User => {
   const language = backendUser.preferredLanguage === 'id' ? 'id' : 'en'
-  const currency = backendUser.preferredCurrency === 'IDR' ? 'IDR' : 'USD'
+  const currency = (['USD', 'IDR', 'EUR'].includes(backendUser.preferredCurrency)
+    ? backendUser.preferredCurrency
+    : 'USD') as 'USD' | 'IDR' | 'EUR'
 
   return {
     profile: {
@@ -102,7 +104,7 @@ export const authService = {
    */
   updateSettings: async (settings: {
     language: 'en' | 'id'
-    currency: 'USD' | 'IDR'
+    currency: 'USD' | 'IDR' | 'EUR'
   }): Promise<User> => {
     const payload = {
       preferredLanguage: settings.language,

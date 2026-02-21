@@ -8,7 +8,12 @@ import { useAuthStore } from '@/stores/auth.store'
 import { authService } from '@/services/auth.service'
 import type { SupportedCurrency } from '@/types'
 
-export function SettingsDropdown() {
+export interface SettingsDropdownProps {
+  /** When true, render settings inline (no dropdown) - for mobile drawer to avoid cut-off */
+  inline?: boolean
+}
+
+export function SettingsDropdown({ inline = false }: SettingsDropdownProps) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const { user, updateUser } = useAuthStore()
@@ -76,17 +81,8 @@ export function SettingsDropdown() {
     mutation.mutate()
   }
 
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={handleOpenToggle}
-        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
-      >
-        {t('settings.title', 'Settings')}
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50 p-4 space-y-3">
+  const content = (
+    <div className={inline ? 'w-full space-y-3' : 'absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50 p-4 space-y-3 min-w-[200px]'}>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">
               {t('settings.language', 'Language')}
@@ -113,7 +109,7 @@ export function SettingsDropdown() {
               onChange={handleCurrencyChange}
               className="h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
-              {CURRENCIES.filter((c) => c.value === 'USD' || c.value === 'IDR').map((c) => (
+              {CURRENCIES.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>
@@ -124,15 +120,17 @@ export function SettingsDropdown() {
           {error && <p className="text-xs text-destructive">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setOpen(false)}
-              disabled={mutation.isPending}
-            >
-              {t('common.cancel')}
-            </Button>
+            {!inline && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setOpen(false)}
+                disabled={mutation.isPending}
+              >
+                {t('common.cancel')}
+              </Button>
+            )}
             <Button
               type="button"
               size="sm"
@@ -143,7 +141,27 @@ export function SettingsDropdown() {
             </Button>
           </div>
         </div>
-      )}
+  )
+
+  if (inline) {
+    return (
+      <div className="w-full space-y-3">
+        <p className="text-sm font-medium text-foreground">{t('settings.title', 'Settings')}</p>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={handleOpenToggle}
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+      >
+        {t('settings.title', 'Settings')}
+      </button>
+      {open && content}
     </div>
   )
 }

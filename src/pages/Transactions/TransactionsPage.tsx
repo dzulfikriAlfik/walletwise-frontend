@@ -23,6 +23,7 @@ import { useTransactions } from '@/hooks/useTransaction'
 import { useAuth } from '@/hooks/useAuth'
 import { format, parseISO, isValid } from 'date-fns'
 import { formatCurrency, formatDate } from '@/utils/format'
+import { convertCurrency } from '@/utils/currency'
 import { TRANSACTION_CATEGORY_LABELS } from '@/utils/constants'
 import {
   TransactionType,
@@ -56,7 +57,6 @@ export default function TransactionsPage() {
 
   const {
     transactions,
-    summary,
     isLoading,
     createTransaction,
     updateTransaction,
@@ -64,6 +64,25 @@ export default function TransactionsPage() {
   } = useTransactions(filters)
 
   const selectedCurrency = (user?.settings?.currency || 'USD') as string
+
+  const convertedSummary = useMemo(() => {
+    const list = transactions ?? []
+    if (list.length === 0) return null
+    let totalIncome = 0
+    let totalExpense = 0
+    for (const tx of list) {
+      const walletCurrency = tx.wallet?.currency ?? 'USD'
+      const converted = convertCurrency(tx.amount, walletCurrency, selectedCurrency)
+      if (tx.type === TransactionType.INCOME) totalIncome += converted
+      else totalExpense += converted
+    }
+    return {
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+      transactionCount: list.length,
+    }
+  }, [transactions, selectedCurrency])
 
   useEffect(() => {
     if (isAdding && wallets.length > 0 && !form.walletId) {
@@ -83,7 +102,7 @@ export default function TransactionsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!form.walletId || !form.description.trim() || form.amount <= 0) {
+    if (!form.walletId || form.amount <= 0) {
       setError(t('transactions.createFailed'))
       return
     }
@@ -129,13 +148,13 @@ export default function TransactionsPage() {
 
   const openAddPopup = () => {
     setError('')
-    setForm({
+      setForm({
       walletId: wallets[0]?.id ?? '',
       type: TransactionType.EXPENSE,
       category: TransactionCategory.FOOD,
       amount: 0,
       description: '',
-      date: new Date().toISOString().slice(0, 16),
+      date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     })
     setIsAdding(true)
   }
@@ -209,13 +228,13 @@ export default function TransactionsPage() {
         <p className="text-muted-foreground mt-1">{t('transactions.subtitle')}</p>
       </div>
 
-      {/* Summary - Glanceable income vs expense */}
-      {summary && summary.transactionCount > 0 && (
+      {/* Summary - Glanceable income vs expense (converted to selected currency) */}
+      {convertedSummary && convertedSummary.transactionCount > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('transactions.summary')}</CardTitle>
             <CardDescription>
-              {summary.transactionCount} {t('transactions.title').toLowerCase()}
+              {convertedSummary.transactionCount} {t('transactions.title').toLowerCase()}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -223,23 +242,23 @@ export default function TransactionsPage() {
               <div className="p-4 rounded-xl bg-success/5 border border-success/20">
                 <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalIncome')}</p>
                 <p className="text-xl font-bold text-success mt-1">
-                  +{formatCurrency(summary.totalIncome, selectedCurrency)}
+                  ≈ +{formatCurrency(convertedSummary.totalIncome, selectedCurrency)}
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
                 <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalExpense')}</p>
                 <p className="text-xl font-bold text-destructive mt-1">
-                  −{formatCurrency(summary.totalExpense, selectedCurrency)}
+                  ≈ −{formatCurrency(convertedSummary.totalExpense, selectedCurrency)}
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-muted/50">
                 <p className="text-sm font-medium text-muted-foreground">{t('dashboard.netBalance')}</p>
                 <p
                   className={`text-xl font-bold mt-1 tabular-nums ${
-                    summary.balance >= 0 ? 'text-success' : 'text-destructive'
+                    convertedSummary.balance >= 0 ? 'text-success' : 'text-destructive'
                   }`}
                 >
-                  {summary.balance >= 0 ? '+' : ''}{formatCurrency(summary.balance, selectedCurrency)}
+                  ≈ {convertedSummary.balance >= 0 ? '+' : ''}{formatCurrency(convertedSummary.balance, selectedCurrency)}
                 </p>
               </div>
             </div>
@@ -367,7 +386,7 @@ export default function TransactionsPage() {
                 >
                   <>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">{tx.description}</p>
+                        <p className="font-medium text-foreground">{tx.description || '—'}</p>
                         <p className="text-sm text-muted-foreground">
                           {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
                         </p>
@@ -379,7 +398,7 @@ export default function TransactionsPage() {
                           }`}
                         >
                           {tx.type === TransactionType.INCOME ? '+' : '−'}
-                          {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
+                          {formatCurrency(convertCurrency(tx.amount, tx.wallet?.currency ?? 'USD', selectedCurrency), selectedCurrency)}
                         </p>
                         <div className="flex gap-2">
                           <Button
@@ -416,7 +435,7 @@ export default function TransactionsPage() {
         formId="add-transaction-form"
         primaryLabel={t('common.save')}
         primaryLoading={isSubmitting}
-        primaryDisabled={!form.walletId || !form.description.trim() || form.amount <= 0}
+        primaryDisabled={!form.walletId || form.amount <= 0}
         secondaryLabel={t('common.cancel')}
         onSecondaryClick={closeAddPopup}
         error={error}
@@ -508,7 +527,6 @@ export default function TransactionsPage() {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.description')}</label>
             <Input
-              required
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
@@ -640,7 +658,7 @@ function EditTransactionPopup({
       onPrimaryClick={handleSave}
       primaryLabel={t('common.save')}
       primaryLoading={isSubmitting}
-      primaryDisabled={!description.trim() || amount <= 0}
+        primaryDisabled={amount <= 0}
       secondaryLabel={t('common.cancel')}
       onSecondaryClick={onClose}
       error={error}

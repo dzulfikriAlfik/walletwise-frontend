@@ -20,7 +20,9 @@ import { CrudPopup } from '@/components/ui/CrudPopup'
 import { useQueryClient } from '@tanstack/react-query'
 import { useWallets } from '@/hooks/useWallet'
 import { useAuth } from '@/hooks/useAuth'
-import { CURRENCIES, FX_RATES, QUERY_KEYS, SUBSCRIPTION_LIMITS } from '@/utils/constants'
+import { CURRENCIES, QUERY_KEYS, SUBSCRIPTION_LIMITS } from '@/utils/constants'
+import { convertCurrency } from '@/utils/currency'
+import { TotalBalanceCard } from '@/components/TotalBalanceCard'
 import { SubscriptionTier } from '@/types'
 
 export default function WalletsPage() {
@@ -55,7 +57,7 @@ export default function WalletsPage() {
   const [error, setError] = useState('')
 
   const tier = user?.subscription?.tier || 'free'
-  const selectedCurrency = (user?.settings?.currency || 'USD') as 'USD' | 'IDR'
+  const selectedCurrency = (user?.settings?.currency || 'USD') as string
 
   const frozenWalletIds = useMemo(() => {
     if (!user) return new Set<string>()
@@ -96,14 +98,9 @@ export default function WalletsPage() {
   )
 
   const effectiveTotalBalance = useMemo(() => {
-    // Convert each wallet balance to selectedCurrency via USD as base
     return wallets.reduce((sum, w) => {
       if (frozenWalletIds.has(w.id)) return sum
-      const fromRate = FX_RATES[w.currency as 'USD' | 'IDR'] ?? 1
-      const toRate = FX_RATES[selectedCurrency] ?? 1
-      const amountInUsd = w.balance / fromRate
-      const amountInSelected = amountInUsd * toRate
-      return sum + amountInSelected
+      return sum + convertCurrency(w.balance, w.currency, selectedCurrency)
     }, 0)
   }, [wallets, frozenWalletIds, selectedCurrency])
 
@@ -251,19 +248,14 @@ export default function WalletsPage() {
         </p>
       </div>
 
-      {/* Summary Card - Digital wallet feel */}
+      {/* Summary Card - Total balance with icons */}
       {wallets.length > 0 && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('wallets.totalBalance')}</p>
-            <p className="text-3xl md:text-4xl font-bold text-foreground mt-1">
-              {formatCurrency(effectiveTotalBalance, selectedCurrency)}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {t('wallets.totalFromWallets', { count: wallets.length })}
-            </p>
-          </CardContent>
-        </Card>
+        <TotalBalanceCard
+          amount={formatCurrency(effectiveTotalBalance, selectedCurrency)}
+          label={t('wallets.totalBalance')}
+          sublabel={t('wallets.totalFromWallets', { count: wallets.length })}
+          helpTooltip={t('wallets.totalFromWallets', { count: wallets.length })}
+        />
       )}
 
       {/* Create Wallet - Show button or form */}

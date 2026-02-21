@@ -104,13 +104,16 @@ export const CURRENCIES = [
 ] as const
 
 /**
- * Approximate FX rates relative to USD
+ * Approximate FX rates relative to USD (global, used across all pages)
  * 1 USD = FX_RATES[code] units of that currency
  */
 export const FX_RATES = {
   USD: 1,
-  IDR: 15000,
+  IDR: 16862,
+  EUR: 0.92,
 } as const
+
+export type FxCurrency = keyof typeof FX_RATES
 
 /**
  * Date Format Patterns

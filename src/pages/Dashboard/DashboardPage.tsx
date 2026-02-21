@@ -14,14 +14,16 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
+import { TotalBalanceCard } from '@/components/TotalBalanceCard'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useAuth } from '@/hooks/useAuth'
 import { QUERY_KEYS } from '@/utils/constants'
 import { formatCurrency } from '@/utils/format'
-import { TRANSACTION_CATEGORY_LABELS, FX_RATES, CURRENCIES } from '@/utils/constants'
+import { TRANSACTION_CATEGORY_LABELS, CURRENCIES } from '@/utils/constants'
+import { convertCurrency } from '@/utils/currency'
 import { TransactionType } from '@/types'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 export default function DashboardPage() {
   const { t } = useTranslation()
@@ -30,7 +32,6 @@ export default function DashboardPage() {
   const { wallets, isLoading: walletsLoading } = useWallets()
   const {
     transactions,
-    summary,
     isLoading: transactionsLoading,
   } = useTransactions()
 
@@ -40,13 +41,11 @@ export default function DashboardPage() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
   }, [queryClient])
 
-  const selectedCurrency = (user?.settings?.currency || 'USD') as 'USD' | 'IDR'
+  const selectedCurrency = (user?.settings?.currency || 'USD') as string
   const currencySymbol = CURRENCIES.find((c) => c.value === selectedCurrency)?.symbol ?? selectedCurrency
 
   const totalBalance = wallets.reduce((sum, w) => {
-    const fromRate = FX_RATES[w.currency as keyof typeof FX_RATES] ?? 1
-    const toRate = FX_RATES[selectedCurrency] ?? 1
-    return sum + (w.balance / fromRate) * toRate
+    return sum + convertCurrency(w.balance, w.currency, selectedCurrency)
   }, 0)
 
   const recentTransactions = (transactions ?? []).slice(0, 5)
@@ -54,6 +53,19 @@ export default function DashboardPage() {
 
   const formatAmount = (amount: number) =>
     `${currencySymbol} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+
+  const convertedSummary = useMemo(() => {
+    const list = transactions ?? []
+    if (list.length === 0) return null
+    let totalIncome = 0
+    let totalExpense = 0
+    for (const tx of list) {
+      const converted = convertCurrency(tx.amount, tx.wallet?.currency ?? 'USD', selectedCurrency)
+      if (tx.type === TransactionType.INCOME) totalIncome += converted
+      else totalExpense += converted
+    }
+    return { totalIncome, totalExpense, balance: totalIncome - totalExpense, transactionCount: list.length }
+  }, [transactions, selectedCurrency])
 
   if (isLoading) {
     return (
@@ -95,7 +107,7 @@ export default function DashboardPage() {
     )
   }
 
-  const hasData = wallets.length > 0 || (summary && summary.transactionCount > 0)
+  const hasData = wallets.length > 0 || (transactions && transactions.length > 0)
 
   if (!hasData) {
     return (
@@ -130,28 +142,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Total Balance - Most Prominent Hero Card */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <CardContent className="p-6 md:p-8">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            {t('dashboard.totalBalance')}
-          </p>
-          <p className="text-3xl md:text-4xl font-bold text-foreground mt-1">
-            {formatAmount(totalBalance)}
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {t('wallets.totalFromWallets', { count: wallets.length })}
-          </p>
-        </CardContent>
-      </Card>
+      <TotalBalanceCard
+        amount={formatAmount(totalBalance)}
+        label={t('dashboard.totalBalance')}
+        sublabel={t('wallets.totalFromWallets', { count: wallets.length })}
+        helpTooltip={t('wallets.totalFromWallets', { count: wallets.length })}
+      />
 
       {/* Income vs Expense - Glanceable */}
-      {summary && summary.transactionCount > 0 && (
+      {convertedSummary && convertedSummary.transactionCount > 0 && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalIncome')}</p>
               <p className="text-xl md:text-2xl font-bold text-success mt-1">
-                +{formatAmount(summary.totalIncome)}
+                +{formatAmount(convertedSummary.totalIncome)}
               </p>
             </CardContent>
           </Card>
@@ -159,7 +164,7 @@ export default function DashboardPage() {
             <CardContent className="p-5">
               <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalExpense')}</p>
               <p className="text-xl md:text-2xl font-bold text-destructive mt-1">
-                −{formatAmount(summary.totalExpense)}
+                −{formatAmount(convertedSummary.totalExpense)}
               </p>
             </CardContent>
           </Card>
@@ -168,13 +173,13 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-muted-foreground">{t('dashboard.netBalance')}</p>
               <p
                 className={`text-xl md:text-2xl font-bold mt-1 ${
-                  summary.balance >= 0 ? 'text-success' : 'text-destructive'
+                  convertedSummary.balance >= 0 ? 'text-success' : 'text-destructive'
                 }`}
               >
-                {summary.balance >= 0 ? '+' : ''}{formatAmount(summary.balance)}
+                {convertedSummary.balance >= 0 ? '+' : ''}{formatAmount(convertedSummary.balance)}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                {summary.transactionCount} {t('transactions.title').toLowerCase()}
+                {convertedSummary.transactionCount} {t('transactions.title').toLowerCase()}
               </p>
             </CardContent>
           </Card>
@@ -216,7 +221,7 @@ export default function DashboardPage() {
                   className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground truncate">{tx.description}</p>
+                    <p className="font-medium text-foreground truncate">{tx.description || '—'}</p>
                     <p className="text-sm text-muted-foreground mt-0.5">
                       {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {new Date(tx.date).toLocaleDateString()}
                     </p>
@@ -227,7 +232,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     {tx.type === TransactionType.INCOME ? '+' : '−'}
-                    {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
+                    {formatCurrency(convertCurrency(tx.amount, tx.wallet?.currency ?? 'USD', selectedCurrency), selectedCurrency)}
                   </p>
                 </div>
               ))}

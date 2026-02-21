@@ -28,7 +28,7 @@ export interface UserProfile {
   updatedAt: string
 }
 
-export type SupportedCurrency = 'USD' | 'IDR'
+export type SupportedCurrency = 'USD' | 'IDR' | 'EUR'
 
 export interface UserSettings {
   language: 'en' | 'id'

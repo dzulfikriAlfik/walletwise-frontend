@@ -122,7 +122,7 @@ export default function DashboardLayout() {
             className="fixed inset-x-0 top-16 z-50 md:hidden bg-card border-b border-border shadow-xl"
             aria-label="Main navigation"
           >
-            <div className="px-4 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="px-4 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain pb-safe">
               {navItems.map((item) => (
                 <div key={item.to} onClick={closeMobileMenu}>
                   <Link
@@ -142,8 +142,8 @@ export default function DashboardLayout() {
                 <p className="px-4 py-2 text-sm text-muted-foreground">
                   {t('nav.welcome', { name: user?.profile.name })}
                 </p>
-                <div className="px-2">
-                  <SettingsDropdown />
+                <div className="px-2 pb-4">
+                  <SettingsDropdown inline />
                 </div>
                 <Button
                   variant="outline"
