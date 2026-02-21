@@ -12,12 +12,12 @@ import { useAuth } from '@/hooks/useAuth'
 import { SettingsDropdown } from '@/components/SettingsDropdown'
 import { QUERY_KEYS } from '@/utils/constants'
 
-const navItems = [
+const navItems: Array<{ to: string; labelKey: string; onNavigate?: boolean }> = [
   { to: '/dashboard', labelKey: 'nav.dashboard' },
   { to: '/wallets', labelKey: 'nav.wallets', onNavigate: true },
   { to: '/transactions', labelKey: 'nav.transactions' },
   { to: '/billing', labelKey: 'nav.billing' },
-] as const
+]
 
 export default function DashboardLayout() {
   const navigate = useNavigate()
