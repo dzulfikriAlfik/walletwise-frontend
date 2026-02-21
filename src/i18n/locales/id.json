@@ -118,10 +118,43 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "comingSoon": "Segera hadir..."
+    "subtitle": "Ringkasan keuangan Anda",
+    "totalBalance": "Total Saldo",
+    "totalIncome": "Total Pemasukan",
+    "totalExpense": "Total Pengeluaran",
+    "netBalance": "Saldo Bersih",
+    "recentTransactions": "Transaksi Terbaru",
+    "recentDescription": "Pemasukan dan pengeluaran terbaru Anda",
+    "noTransactions": "Belum ada transaksi",
+    "viewAll": "Lihat semua",
+    "createFirst": "Buat wallet dan transaksi pertama untuk melihat ringkasan di sini"
   },
   "transactions": {
     "title": "Transaksi",
-    "comingSoon": "Segera hadir..."
+    "subtitle": "Lacak pemasukan dan pengeluaran",
+    "addTransaction": "Tambah Transaksi",
+    "filters": "Filter",
+    "allWallets": "Semua Wallet",
+    "allTypes": "Semua Tipe",
+    "allCategories": "Semua Kategori",
+    "income": "Pemasukan",
+    "expense": "Pengeluaran",
+    "from": "Dari",
+    "to": "Sampai",
+    "noTransactions": "Belum ada transaksi",
+    "createFirst": "Tambah transaksi pertama untuk memulai",
+    "editTransaction": "Edit Transaksi",
+    "deleteTransaction": "Hapus Transaksi",
+    "deleteConfirm": "Hapus transaksi ini?",
+    "wallet": "Wallet",
+    "type": "Tipe",
+    "category": "Kategori",
+    "amount": "Jumlah",
+    "description": "Deskripsi",
+    "date": "Tanggal",
+    "createFailed": "Gagal membuat transaksi",
+    "updateFailed": "Gagal memperbarui transaksi",
+    "deleteFailed": "Gagal menghapus transaksi",
+    "summary": "Ringkasan"
   }
 }

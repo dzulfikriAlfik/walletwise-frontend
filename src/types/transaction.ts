@@ -39,6 +39,7 @@ export interface Transaction {
   date: string
   createdAt: string
   updatedAt: string
+  wallet?: { id: string; name: string; currency: string }
 }
 
 export interface CreateTransactionData {
@@ -77,9 +78,9 @@ export const TransactionPeriod = {
 export type TransactionPeriod = typeof TransactionPeriod[keyof typeof TransactionPeriod]
 
 export interface TransactionSummary {
-  period: TransactionPeriod
   totalIncome: number
   totalExpense: number
-  netBalance: number
+  balance: number
   transactionCount: number
+  byCategory?: Array<{ category: string; total: number; count: number }>
 }

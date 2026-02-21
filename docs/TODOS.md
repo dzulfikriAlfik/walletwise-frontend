@@ -1,13 +1,13 @@
-# WalletWise Frontend – Unimplemented Todos
+# WalletWise Frontend – Todos
 
-This document tracks pending tasks and unimplemented items for the WalletWise frontend project.
+This document tracks pending tasks and completed items for the WalletWise frontend project.
 
 ---
 
-## Pages (Placeholders)
+## Recently Completed
 
-- [ ] **Dashboard** (`/dashboard`) – Replace placeholder with full implementation
-- [ ] **Transactions** (`/transactions`) – Replace placeholder with full implementation (backend APIs ready)
+- [x] **Dashboard** – Wallet/transaction summary, recent transactions, quick links
+- [x] **Transactions** – Full CRUD, filters (wallet, type, category, date range), summary card
 
 ---
 
@@ -44,15 +44,13 @@ From [docs/ipa/ipa-checklist.md](ipa/ipa-checklist.md):
 
 ---
 
-## Priority Summary
+## Priority Summary (Pending)
 
 | Priority   | Item                     |
 |------------|--------------------------|
-| **High**   | Dashboard page           |
-| **High**   | Transactions page        |
-| **Medium** | CSV/Excel export UI      |
-| **Medium** | Analytics dashboard UI   |
-| **Lower**  | Profile page (optional)  |
+| **High**   | CSV/Excel export UI      |
+| **High**   | Analytics dashboard UI   |
+| **Medium** | Profile page (optional)  |
 | **Lower**  | Unit & integration tests |
 | **Lower**  | CI pipeline              |
 | **Lower**  | Deployment URLs          |

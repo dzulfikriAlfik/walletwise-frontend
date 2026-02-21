@@ -118,10 +118,43 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "comingSoon": "Coming soon..."
+    "subtitle": "Overview of your finances",
+    "totalBalance": "Total Balance",
+    "totalIncome": "Total Income",
+    "totalExpense": "Total Expenses",
+    "netBalance": "Net Balance",
+    "recentTransactions": "Recent Transactions",
+    "recentDescription": "Your latest income and expenses",
+    "noTransactions": "No transactions yet",
+    "viewAll": "View all",
+    "createFirst": "Create your first wallet and transaction to see your summary here"
   },
   "transactions": {
     "title": "Transactions",
-    "comingSoon": "Coming soon..."
+    "subtitle": "Track income and expenses",
+    "addTransaction": "Add Transaction",
+    "filters": "Filters",
+    "allWallets": "All Wallets",
+    "allTypes": "All Types",
+    "allCategories": "All Categories",
+    "income": "Income",
+    "expense": "Expense",
+    "from": "From",
+    "to": "To",
+    "noTransactions": "No transactions yet",
+    "createFirst": "Add your first transaction to get started",
+    "editTransaction": "Edit Transaction",
+    "deleteTransaction": "Delete Transaction",
+    "deleteConfirm": "Delete this transaction?",
+    "wallet": "Wallet",
+    "type": "Type",
+    "category": "Category",
+    "amount": "Amount",
+    "description": "Description",
+    "date": "Date",
+    "createFailed": "Failed to create transaction",
+    "updateFailed": "Failed to update transaction",
+    "deleteFailed": "Failed to delete transaction",
+    "summary": "Summary"
   }
 }

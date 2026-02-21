@@ -1,6 +1,7 @@
 /**
  * Transaction Service
  * Handles transaction-related API calls
+ * Backend returns { success, data } - we extract data
  */
 
 import { apiClient } from './api/client'
@@ -14,40 +15,52 @@ import type {
   QueryParams,
 } from '@/types'
 
+interface ApiResponse<T> {
+  success: boolean
+  data: T
+}
+
 export const transactionService = {
   /**
    * Get all transactions with optional filters
    */
   getAll: async (
     filters?: TransactionFilters,
-    params?: QueryParams
+    _params?: QueryParams
   ): Promise<PaginatedResponse<Transaction>> => {
-    const { data } = await apiClient.get<PaginatedResponse<Transaction>>(
+    const { data } = await apiClient.get<ApiResponse<Transaction[]>>(
       '/transactions',
-      {
-        params: { ...filters, ...params },
-      }
+      { params: filters }
     )
-    return data
+    const list = data.data
+    return {
+      data: list,
+      pagination: {
+        page: 1,
+        limit: list.length,
+        total: list.length,
+        totalPages: 1,
+      },
+    }
   },
 
   /**
    * Get single transaction by ID
    */
   getById: async (id: string): Promise<Transaction> => {
-    const { data } = await apiClient.get<Transaction>(`/transactions/${id}`)
-    return data
+    const { data } = await apiClient.get<ApiResponse<Transaction>>(`/transactions/${id}`)
+    return data.data
   },
 
   /**
    * Create new transaction
    */
   create: async (transactionData: CreateTransactionData): Promise<Transaction> => {
-    const { data } = await apiClient.post<Transaction>(
+    const { data } = await apiClient.post<ApiResponse<Transaction>>(
       '/transactions',
       transactionData
     )
-    return data
+    return data.data
   },
 
   /**
@@ -57,11 +70,11 @@ export const transactionService = {
     id: string,
     transactionData: UpdateTransactionData
   ): Promise<Transaction> => {
-    const { data } = await apiClient.patch<Transaction>(
+    const { data } = await apiClient.patch<ApiResponse<Transaction>>(
       `/transactions/${id}`,
       transactionData
     )
-    return data
+    return data.data
   },
 
   /**
@@ -75,28 +88,10 @@ export const transactionService = {
    * Get transaction summary
    */
   getSummary: async (filters?: TransactionFilters): Promise<TransactionSummary> => {
-    const { data } = await apiClient.get<TransactionSummary>(
+    const { data } = await apiClient.get<ApiResponse<TransactionSummary>>(
       '/transactions/summary',
-      {
-        params: filters,
-      }
+      { params: filters }
     )
-    return data
-  },
-
-  /**
-   * Get transactions by wallet
-   */
-  getByWallet: async (
-    walletId: string,
-    params?: QueryParams
-  ): Promise<PaginatedResponse<Transaction>> => {
-    const { data } = await apiClient.get<PaginatedResponse<Transaction>>(
-      `/wallets/${walletId}/transactions`,
-      {
-        params,
-      }
-    )
-    return data
+    return data.data
   },
 }
