@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { CrudPopup } from '@/components/ui/CrudPopup'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useAuth } from '@/hooks/useAuth'
@@ -38,6 +39,7 @@ export default function TransactionsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   const [form, setForm] = useState<CreateTransactionData>({
@@ -82,6 +84,7 @@ export default function TransactionsPage() {
       setError(t('transactions.createFailed'))
       return
     }
+    setIsSubmitting(true)
     try {
       await createTransaction({
         ...form,
@@ -96,22 +99,57 @@ export default function TransactionsPage() {
         date: new Date().toISOString().slice(0, 16),
       })
       setIsAdding(false)
+      setError('')
     } catch (err: unknown) {
       setError((err as { error?: { message?: string } })?.error?.message ?? t('transactions.createFailed'))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleUpdate = async (id: string, data: UpdateTransactionData) => {
     setError('')
+    setIsSubmitting(true)
     try {
       await updateTransaction(id, {
         ...data,
         ...(data.date && { date: new Date(data.date).toISOString() }),
       })
       setEditingId(null)
+      setError('')
     } catch (err: unknown) {
       setError((err as { error?: { message?: string } })?.error?.message ?? t('transactions.updateFailed'))
+    } finally {
+      setIsSubmitting(false)
     }
+  }
+
+  const openAddPopup = () => {
+    setError('')
+    setForm({
+      walletId: wallets[0]?.id ?? '',
+      type: TransactionType.EXPENSE,
+      category: TransactionCategory.FOOD,
+      amount: 0,
+      description: '',
+      date: new Date().toISOString().slice(0, 16),
+    })
+    setIsAdding(true)
+  }
+
+  const closeAddPopup = () => {
+    setIsAdding(false)
+    setError('')
+  }
+
+  const openEditPopup = (tx: { id: string }) => {
+    setError('')
+    setEditingId(tx.id)
+  }
+
+  const closeEditPopup = () => {
+    setEditingId(null)
+    setError('')
   }
 
   const handleDeleteConfirm = async () => {
@@ -134,8 +172,29 @@ export default function TransactionsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">{t('common.loading')}</div>
+      <div className="space-y-8">
+        <div>
+          <div className="h-9 w-48 bg-muted rounded-lg animate-pulse" />
+          <div className="h-5 w-64 mt-2 bg-muted rounded animate-pulse" />
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -143,11 +202,11 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{t('transactions.title')}</h1>
-        <p className="text-gray-600 mt-1">{t('transactions.subtitle')}</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('transactions.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('transactions.subtitle')}</p>
       </div>
 
-      {/* Summary */}
+      {/* Summary - Glanceable income vs expense */}
       {summary && summary.transactionCount > 0 && (
         <Card>
           <CardHeader>
@@ -158,26 +217,26 @@ export default function TransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-sm text-gray-500">{t('dashboard.totalIncome')}</p>
-                <p className="text-xl font-bold text-green-600">
-                  {formatCurrency(summary.totalIncome, selectedCurrency)}
+              <div className="p-4 rounded-xl bg-success/5 border border-success/20">
+                <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalIncome')}</p>
+                <p className="text-xl font-bold text-success mt-1">
+                  +{formatCurrency(summary.totalIncome, selectedCurrency)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">{t('dashboard.totalExpense')}</p>
-                <p className="text-xl font-bold text-red-600">
-                  {formatCurrency(summary.totalExpense, selectedCurrency)}
+              <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalExpense')}</p>
+                <p className="text-xl font-bold text-destructive mt-1">
+                  −{formatCurrency(summary.totalExpense, selectedCurrency)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">{t('dashboard.netBalance')}</p>
+              <div className="p-4 rounded-xl bg-muted/50">
+                <p className="text-sm font-medium text-muted-foreground">{t('dashboard.netBalance')}</p>
                 <p
-                  className={`text-xl font-bold ${
-                    summary.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                  className={`text-xl font-bold mt-1 tabular-nums ${
+                    summary.balance >= 0 ? 'text-success' : 'text-destructive'
                   }`}
                 >
-                  {formatCurrency(summary.balance, selectedCurrency)}
+                  {summary.balance >= 0 ? '+' : ''}{formatCurrency(summary.balance, selectedCurrency)}
                 </p>
               </div>
             </div>
@@ -185,18 +244,18 @@ export default function TransactionsPage() {
         </Card>
       )}
 
-      {/* Filters */}
+      {/* Filters - Visually grouped, touch-friendly */}
       <Card>
         <CardHeader>
           <CardTitle>{t('transactions.filters')}</CardTitle>
           <CardDescription>{t('transactions.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div>
-              <label className="text-sm text-gray-600">{t('transactions.wallet')}</label>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.wallet')}</label>
               <select
-                className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 value={filters.walletId ?? ''}
                 onChange={(e) =>
                   setFilters({ ...filters, walletId: e.target.value || undefined })
@@ -211,9 +270,9 @@ export default function TransactionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm text-gray-600">{t('transactions.type')}</label>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
               <select
-                className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 value={filters.type ?? ''}
                 onChange={(e) =>
                   setFilters({
@@ -228,9 +287,9 @@ export default function TransactionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm text-gray-600">{t('transactions.category')}</label>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
               <select
-                className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 value={filters.category ?? ''}
                 onChange={(e) =>
                   setFilters({
@@ -248,10 +307,9 @@ export default function TransactionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm text-gray-600">{t('transactions.from')}</label>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.from')}</label>
               <Input
                 type="date"
-                className="mt-1"
                 value={filters.startDate ?? ''}
                 onChange={(e) =>
                   setFilters({ ...filters, startDate: e.target.value || undefined })
@@ -259,10 +317,9 @@ export default function TransactionsPage() {
               />
             </div>
             <div>
-              <label className="text-sm text-gray-600">{t('transactions.to')}</label>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.to')}</label>
               <Input
                 type="date"
-                className="mt-1"
                 value={filters.endDate ?? ''}
                 onChange={(e) =>
                   setFilters({ ...filters, endDate: e.target.value || undefined })
@@ -280,213 +337,220 @@ export default function TransactionsPage() {
             <CardTitle>{t('transactions.title')}</CardTitle>
             <CardDescription>{t('transactions.subtitle')}</CardDescription>
           </div>
-          {wallets.length > 0 && !isAdding && (
-            <Button onClick={() => setIsAdding(true)}>
+          {wallets.length > 0 && (
+            <Button onClick={openAddPopup} className="hidden md:inline-flex">
               {t('transactions.addTransaction')}
             </Button>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
-          )}
-
-          {isAdding && (
-            <form
-              onSubmit={handleCreate}
-              className="p-4 border rounded-lg bg-gray-50 space-y-3"
-            >
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-sm text-gray-600">{t('transactions.wallet')}</label>
-                  <select
-                    required
-                    className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.walletId}
-                    onChange={(e) => setForm({ ...form, walletId: e.target.value })}
-                  >
-                    <option value="">-- {t('transactions.wallet')} --</option>
-                    {wallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name} ({w.currency})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">{t('transactions.type')}</label>
-                  <select
-                    className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.type}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        type: e.target.value as TransactionType,
-                        category:
-                          e.target.value === TransactionType.INCOME
-                            ? TransactionCategory.SALARY
-                            : TransactionCategory.FOOD,
-                      })
-                    }
-                  >
-                    <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
-                    <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-sm text-gray-600">{t('transactions.category')}</label>
-                  <select
-                    required
-                    className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.category}
-                    onChange={(e) =>
-                      setForm({ ...form, category: e.target.value as TransactionCategory })
-                    }
-                  >
-                    {(form.type === TransactionType.INCOME
-                      ? [
-                          TransactionCategory.SALARY,
-                          TransactionCategory.FREELANCE,
-                          TransactionCategory.INVESTMENT,
-                          TransactionCategory.OTHER_INCOME,
-                        ]
-                      : [
-                          TransactionCategory.FOOD,
-                          TransactionCategory.TRANSPORT,
-                          TransactionCategory.ENTERTAINMENT,
-                          TransactionCategory.BILLS,
-                          TransactionCategory.SHOPPING,
-                          TransactionCategory.HEALTH,
-                          TransactionCategory.EDUCATION,
-                          TransactionCategory.OTHER_EXPENSE,
-                        ]
-                    ).map((c) => (
-                      <option key={c} value={c}>
-                        {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">{t('transactions.amount')}</label>
-                  <Input
-                    type="number"
-                    required
-                    min={0.01}
-                    step={0.01}
-                    className="mt-1"
-                    value={form.amount || ''}
-                    onChange={(e) =>
-                      setForm({ ...form, amount: parseFloat(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600">{t('transactions.description')}</label>
-                <Input
-                  required
-                  className="mt-1"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm text-gray-600">{t('transactions.date')}</label>
-                <Input
-                  type="datetime-local"
-                  required
-                  className="mt-1"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit">{t('common.save')}</Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAdding(false)}
-                >
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            </form>
-          )}
-
           {/* Transaction List */}
           <div className="space-y-2">
             {(transactions ?? []).length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12">
                 <p className="text-4xl mb-2">📝</p>
-                <p>{t('transactions.noTransactions')}</p>
-                <p className="text-sm mt-1">{t('transactions.createFirst')}</p>
+                <p className="text-muted-foreground">{t('transactions.noTransactions')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('transactions.createFirst')}</p>
                 {wallets.length > 0 && (
-                  <Button
-                    className="mt-4"
-                    onClick={() => setIsAdding(true)}
-                  >
+                  <Button className="mt-4" onClick={openAddPopup}>
                     {t('transactions.addTransaction')}
                   </Button>
                 )}
               </div>
             ) : (
-              (transactions ?? []).map((tx) => (
+              <div className="divide-y divide-border">
+                {(transactions ?? []).map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4 first:pt-0 last:pb-0"
                 >
-                  {editingId === tx.id ? (
-                    <EditTransactionForm
-                      transaction={tx}
-                      onSave={(data) => handleUpdate(tx.id, data)}
-                      onCancel={() => setEditingId(null)}
-                    />
-                  ) : (
-                    <>
-                      <div>
-                        <p className="font-medium text-gray-900">{tx.description}</p>
-                        <p className="text-sm text-gray-500">
+                  <>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-foreground">{tx.description}</p>
+                        <p className="text-sm text-muted-foreground">
                           {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                         <p
-                          className={`font-semibold ${
-                            tx.type === TransactionType.INCOME ? 'text-green-600' : 'text-red-600'
+                          className={`font-semibold tabular-nums shrink-0 ${
+                            tx.type === TransactionType.INCOME ? 'text-success' : 'text-destructive'
                           }`}
                         >
-                          {tx.type === TransactionType.INCOME ? '+' : '-'}
+                          {tx.type === TransactionType.INCOME ? '+' : '−'}
                           {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
                         </p>
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setEditingId(tx.id)}
+                            onClick={() => openEditPopup(tx)}
                           >
                             {t('common.edit')}
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-600 hover:text-red-700"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => setDeleteTarget(tx.id)}
                           >
                             {t('common.delete')}
                           </Button>
                         </div>
                       </div>
-                    </>
-                  )}
+                  </>
                 </div>
-              ))
+              ))}
+              </div>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Transaction Popup */}
+      <CrudPopup
+        open={isAdding}
+        onClose={closeAddPopup}
+        title={t('transactions.addTransaction')}
+        formId="add-transaction-form"
+        primaryLabel={t('common.save')}
+        primaryLoading={isSubmitting}
+        primaryDisabled={!form.walletId || !form.description.trim() || form.amount <= 0}
+        secondaryLabel={t('common.cancel')}
+        onSecondaryClick={closeAddPopup}
+        error={error}
+      >
+        <form id="add-transaction-form" onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.wallet')}</label>
+            <select
+              required
+              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              value={form.walletId}
+              onChange={(e) => setForm({ ...form, walletId: e.target.value })}
+            >
+              <option value="">-- {t('transactions.wallet')} --</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name} ({w.currency})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
+            <select
+              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              value={form.type}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  type: e.target.value as TransactionType,
+                  category:
+                    e.target.value === TransactionType.INCOME
+                      ? TransactionCategory.SALARY
+                      : TransactionCategory.FOOD,
+                })
+              }
+            >
+              <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
+              <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
+            <select
+              required
+              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              value={form.category}
+              onChange={(e) =>
+                setForm({ ...form, category: e.target.value as TransactionCategory })
+              }
+            >
+              {(form.type === TransactionType.INCOME
+                ? [
+                    TransactionCategory.SALARY,
+                    TransactionCategory.FREELANCE,
+                    TransactionCategory.INVESTMENT,
+                    TransactionCategory.OTHER_INCOME,
+                  ]
+                : [
+                    TransactionCategory.FOOD,
+                    TransactionCategory.TRANSPORT,
+                    TransactionCategory.ENTERTAINMENT,
+                    TransactionCategory.BILLS,
+                    TransactionCategory.SHOPPING,
+                    TransactionCategory.HEALTH,
+                    TransactionCategory.EDUCATION,
+                    TransactionCategory.OTHER_EXPENSE,
+                  ]
+              ).map((c) => (
+                <option key={c} value={c}>
+                  {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.amount')}</label>
+            <Input
+              type="number"
+              required
+              min={0.01}
+              step={0.01}
+              value={form.amount || ''}
+              onChange={(e) =>
+                setForm({ ...form, amount: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.description')}</label>
+            <Input
+              required
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.date')}</label>
+            <Input
+              type="datetime-local"
+              required
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+            />
+          </div>
+        </form>
+      </CrudPopup>
+
+      {/* Edit Transaction Popup */}
+      {(() => {
+        const txToEdit = (transactions ?? []).find((tx) => tx.id === editingId)
+        if (!txToEdit) return null
+        return (
+          <EditTransactionPopup
+            open={!!editingId}
+            transaction={txToEdit}
+            onClose={closeEditPopup}
+            onSave={(data) => handleUpdate(txToEdit.id, data)}
+            error={error}
+            isSubmitting={isSubmitting}
+          />
+        )
+      })()}
+
+      {/* Mobile FAB */}
+      {wallets.length > 0 && (
+        <button
+          type="button"
+          onClick={openAddPopup}
+          className="md:hidden fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center text-2xl font-medium hover:bg-primary/90 active:scale-95 transition-all"
+          aria-label={t('transactions.addTransaction')}
+        >
+          +
+        </button>
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}
@@ -503,23 +567,37 @@ export default function TransactionsPage() {
   )
 }
 
-function EditTransactionForm({
+function EditTransactionPopup({
+  open,
   transaction,
+  onClose,
   onSave,
-  onCancel,
+  error,
+  isSubmitting,
 }: {
+  open: boolean
   transaction: { type: string; category: string; amount: number; description: string; date: string }
+  onClose: () => void
   onSave: (data: UpdateTransactionData) => void
-  onCancel: () => void
+  error: string
+  isSubmitting: boolean
 }) {
   const { t } = useTranslation()
   const [type, setType] = useState(transaction.type)
   const [category, setCategory] = useState(transaction.category)
   const [amount, setAmount] = useState(transaction.amount)
   const [description, setDescription] = useState(transaction.description)
-  const [date, setDate] = useState(
-    transaction.date.slice(0, 16)
-  )
+  const [date, setDate] = useState(transaction.date.slice(0, 16))
+
+  useEffect(() => {
+    if (open) {
+      setType(transaction.type)
+      setCategory(transaction.category)
+      setAmount(transaction.amount)
+      setDescription(transaction.description)
+      setDate(transaction.date.slice(0, 16))
+    }
+  }, [open, transaction.type, transaction.category, transaction.amount, transaction.description, transaction.date])
 
   const categoryOptions = [
     TransactionCategory.SALARY,
@@ -536,57 +614,81 @@ function EditTransactionForm({
     TransactionCategory.OTHER_EXPENSE,
   ]
 
+  const handleSave = () => {
+    onSave({
+      type: type as TransactionType,
+      category: category as TransactionCategory,
+      amount,
+      description,
+      date: new Date(date).toISOString(),
+    })
+  }
+
   return (
-    <div className="flex-1 flex flex-wrap gap-2 items-center">
-      <select
-        className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-      >
-        <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
-        <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
-      </select>
-      <select
-        className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
-        {categoryOptions.map((c) => (
-          <option key={c} value={c}>
-            {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
-          </option>
-        ))}
-      </select>
-      <Input
-        type="number"
-        min={0.01}
-        step={0.01}
-        value={amount}
-        onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-        className="w-24"
-      />
-      <Input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="flex-1 min-w-[120px]"
-      />
-      <Input
-        type="datetime-local"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        className="w-48"
-      />
-      <Button
-        size="sm"
-        onClick={() =>
-          onSave({ type: type as TransactionType, category: category as TransactionCategory, amount, description, date: new Date(date).toISOString() })
-        }
-      >
-        {t('common.save')}
-      </Button>
-      <Button size="sm" variant="outline" onClick={onCancel}>
-        {t('common.cancel')}
-      </Button>
-    </div>
+    <CrudPopup
+      open={open}
+      onClose={onClose}
+      title={t('transactions.editTransaction', 'Edit Transaction')}
+      onPrimaryClick={handleSave}
+      primaryLabel={t('common.save')}
+      primaryLoading={isSubmitting}
+      primaryDisabled={!description.trim() || amount <= 0}
+      secondaryLabel={t('common.cancel')}
+      onSecondaryClick={onClose}
+      error={error}
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
+          <select
+            className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
+            <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
+          <select
+            className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>
+                {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.amount')}</label>
+          <Input
+            type="number"
+            min={0.01}
+            step={0.01}
+            value={amount}
+            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.description')}</label>
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.date')}</label>
+          <Input
+            type="datetime-local"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+      </div>
+    </CrudPopup>
   )
 }

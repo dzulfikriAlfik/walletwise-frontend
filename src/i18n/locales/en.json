@@ -105,6 +105,7 @@
     "pay": "Pay (Dummy)",
     "paymentFailed": "Failed",
     "active": "Active",
+    "recommended": "Recommended",
     "unlimitedWallets": "Unlimited wallets",
     "walletsUpTo": "Up to {{count}} wallets",
     "perMonth": "/month",

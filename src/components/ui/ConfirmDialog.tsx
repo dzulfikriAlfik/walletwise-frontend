@@ -63,18 +63,18 @@ export function ConfirmDialog({
 
       {/* Dialog */}
       <div
-        className="relative w-full max-w-md rounded-xl bg-white shadow-xl border border-gray-200"
+        className="relative w-full max-w-md rounded-xl bg-card shadow-xl border border-border"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 space-y-4">
           <div>
             <h2
               id="confirm-dialog-title"
-              className="text-lg font-semibold text-gray-900"
+              className="text-lg font-semibold text-foreground"
             >
               {title}
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-muted-foreground">
               {message}
             </p>
           </div>

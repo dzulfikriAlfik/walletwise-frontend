@@ -81,20 +81,20 @@ export function SettingsDropdown() {
       <button
         type="button"
         onClick={handleOpenToggle}
-        className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
       >
         {t('settings.title', 'Settings')}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-64 rounded-md border border-gray-200 bg-white shadow-lg z-50 p-4 space-y-3">
+        <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50 p-4 space-y-3">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
               {t('settings.language', 'Language')}
             </label>
             <select
               value={language}
               onChange={handleLanguageChange}
-              className="h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               {LOCALES.map(({ code, label }) => (
                 <option key={code} value={code}>
@@ -105,13 +105,13 @@ export function SettingsDropdown() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
               {t('settings.currency', 'Currency')}
             </label>
             <select
               value={currency}
               onChange={handleCurrencyChange}
-              className="h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               {CURRENCIES.filter((c) => c.value === 'USD' || c.value === 'IDR').map((c) => (
                 <option key={c.value} value={c.value}>
@@ -121,7 +121,7 @@ export function SettingsDropdown() {
             </select>
           </div>
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <Button

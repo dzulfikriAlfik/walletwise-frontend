@@ -57,8 +57,40 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">{t('common.loading')}</div>
+      <div className="space-y-8">
+        <div>
+          <div className="h-9 w-48 bg-muted rounded-lg animate-pulse" />
+          <div className="h-5 w-64 mt-2 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-32 bg-muted rounded animate-pulse" />
+                {i === 1 && <div className="h-4 w-20 mt-2 bg-muted rounded animate-pulse" />}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-40 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex justify-between py-3">
+                  <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -69,19 +101,19 @@ export default function DashboardPage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('dashboard.subtitle')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('dashboard.createFirst')}</p>
         </div>
         <Card>
           <CardContent className="py-16 text-center">
-            <p className="text-6xl mb-4">📊</p>
-            <p className="text-gray-600 mb-4">{t('dashboard.createFirst')}</p>
-            <div className="flex gap-4 justify-center">
+            <p className="text-5xl md:text-6xl mb-4">📊</p>
+            <p className="text-muted-foreground mb-6">{t('dashboard.createFirst')}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/wallets">
-                <Button>{t('wallets.addWallet')}</Button>
+                <Button className="w-full sm:w-auto">{t('wallets.addWallet')}</Button>
               </Link>
               <Link to="/transactions">
-                <Button variant="outline">{t('transactions.addTransaction')}</Button>
+                <Button variant="outline" className="w-full sm:w-auto">{t('transactions.addTransaction')}</Button>
               </Link>
             </div>
           </CardContent>
@@ -93,82 +125,65 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-        <p className="text-gray-600 mt-1">{t('dashboard.subtitle')}</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('dashboard.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-500">
-              {t('dashboard.totalBalance')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-gray-900">
-              {formatAmount(totalBalance)}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              {t('wallets.totalFromWallets', { count: wallets.length })}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Total Balance - Most Prominent Hero Card */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+        <CardContent className="p-6 md:p-8">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            {t('dashboard.totalBalance')}
+          </p>
+          <p className="text-3xl md:text-4xl font-bold text-foreground mt-1">
+            {formatAmount(totalBalance)}
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {t('wallets.totalFromWallets', { count: wallets.length })}
+          </p>
+        </CardContent>
+      </Card>
 
-        {summary && (
-          <>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  {t('dashboard.totalIncome')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatAmount(summary.totalIncome)}
-                </p>
-              </CardContent>
-            </Card>
+      {/* Income vs Expense - Glanceable */}
+      {summary && summary.transactionCount > 0 && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalIncome')}</p>
+              <p className="text-xl md:text-2xl font-bold text-success mt-1">
+                +{formatAmount(summary.totalIncome)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-medium text-muted-foreground">{t('dashboard.totalExpense')}</p>
+              <p className="text-xl md:text-2xl font-bold text-destructive mt-1">
+                −{formatAmount(summary.totalExpense)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-medium text-muted-foreground">{t('dashboard.netBalance')}</p>
+              <p
+                className={`text-xl md:text-2xl font-bold mt-1 ${
+                  summary.balance >= 0 ? 'text-success' : 'text-destructive'
+                }`}
+              >
+                {summary.balance >= 0 ? '+' : ''}{formatAmount(summary.balance)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {summary.transactionCount} {t('transactions.title').toLowerCase()}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  {t('dashboard.totalExpense')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-red-600">
-                  {formatAmount(summary.totalExpense)}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  {t('dashboard.netBalance')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p
-                  className={`text-2xl font-bold ${
-                    summary.balance >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {formatAmount(summary.balance)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {summary.transactionCount} {t('transactions.title').toLowerCase()}
-                </p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-
-      {/* Recent Transactions */}
+      {/* Recent Transactions - Clean list, amount right-aligned */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <CardTitle>{t('dashboard.recentTransactions')}</CardTitle>
             <CardDescription>
@@ -185,33 +200,33 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {recentTransactions.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>{t('dashboard.noTransactions')}</p>
-              <Link to="/transactions" className="mt-2 inline-block">
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">{t('dashboard.noTransactions')}</p>
+              <Link to="/transactions" className="mt-4 inline-block">
                 <Button variant="outline" size="sm">
                   {t('transactions.addTransaction')}
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border">
               {recentTransactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between py-3 border-b last:border-0"
+                  className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">{tx.description}</p>
-                    <p className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground truncate">{tx.description}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
                       {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {new Date(tx.date).toLocaleDateString()}
                     </p>
                   </div>
                   <p
-                    className={`font-semibold ${
-                      tx.type === TransactionType.INCOME ? 'text-green-600' : 'text-red-600'
+                    className={`font-semibold tabular-nums shrink-0 ${
+                      tx.type === TransactionType.INCOME ? 'text-success' : 'text-destructive'
                     }`}
                   >
-                    {tx.type === TransactionType.INCOME ? '+' : '-'}
+                    {tx.type === TransactionType.INCOME ? '+' : '−'}
                     {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
                   </p>
                 </div>

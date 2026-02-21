@@ -113,8 +113,29 @@ export default function BillingPage() {
 
   if (isLoading || !plans) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">{t('billing.loadingPlans')}</div>
+      <div className="space-y-8">
+        <div>
+          <div className="h-9 w-48 bg-muted rounded-lg animate-pulse" />
+          <div className="h-5 w-64 mt-2 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-10 w-20 bg-muted rounded animate-pulse" />
+                <div className="space-y-2 mt-4">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="h-4 bg-muted rounded animate-pulse" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
@@ -122,15 +143,15 @@ export default function BillingPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{t('billing.title')}</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('billing.title')}</h1>
+        <p className="text-muted-foreground mt-1">
           {t('billing.currentPlan')}{' '}
           <span className="font-medium capitalize">{effectiveDisplayTier.replace(/_/g, '+')}</span>
         </p>
       </div>
 
       {/* Billing period toggle */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 p-1 rounded-xl bg-muted/50 w-fit">
         <Button
           variant={billingPeriod === 'monthly' ? 'default' : 'outline'}
           size="sm"
@@ -181,7 +202,7 @@ export default function BillingPage() {
 
       {/* Dummy Payment Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -192,7 +213,7 @@ export default function BillingPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {selectedPlan === 'pro_trial'
                   ? t('billing.upgradeToProTrial', { days: plans.pro.trialDays })
                   : t('billing.upgradeTo', {
@@ -227,13 +248,13 @@ export default function BillingPage() {
               </div>
 
               {formError && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {formError}
                 </p>
               )}
 
               {upgradeMutation.isError && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {(upgradeMutation.error as { error?: { message?: string } })?.error?.message || t('billing.paymentFailed')}
                 </p>
               )}
@@ -290,13 +311,25 @@ function PlanCard({
       ? effectiveDisplayTier === 'free'
       : plan.tier === currentTier
 
+  const isRecommended = plan.tier === 'pro'
   return (
-    <Card className={isCurrent ? 'border-blue-500 border-2' : ''}>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+    <Card
+      className={`relative transition-all duration-200 ${
+        isRecommended ? 'border-2 border-primary shadow-lg ring-2 ring-primary/20' : ''
+      } ${isCurrent ? 'border-primary' : ''}`}
+    >
+      {isRecommended && (
+        <div className="absolute -top-3 left-4 right-4 flex justify-center">
+          <span className="px-3 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
+            {t('billing.recommended')}
+          </span>
+        </div>
+      )}
+      <CardHeader className={isRecommended ? 'pt-6' : ''}>
+        <CardTitle className="flex items-center justify-between gap-2">
           {plan.name}
           {isCurrent && (
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{t('billing.active')}</span>
+            <span className="text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full shrink-0">{t('billing.active')}</span>
           )}
         </CardTitle>
         <CardDescription>
@@ -306,16 +339,19 @@ function PlanCard({
       <CardContent className="space-y-4">
         {price > 0 ? (
           <div>
-            <span className="text-2xl font-bold">${price}</span>
-            <span className="text-gray-500">{billingPeriod === 'yearly' ? t('billing.perYear') : t('billing.perMonth')}</span>
+            <span className="text-2xl font-bold text-foreground">${price}</span>
+            <span className="text-muted-foreground ml-1">{billingPeriod === 'yearly' ? t('billing.perYear') : t('billing.perMonth')}</span>
           </div>
         ) : (
-          <div className="text-2xl font-bold">$0</div>
+          <div className="text-2xl font-bold text-foreground">$0</div>
         )}
 
-        <ul className="space-y-2 text-sm">
+        <ul className="space-y-2.5 text-sm text-muted-foreground">
           {plan.features.map((f, i) => (
-            <li key={i}>✓ {f}</li>
+            <li key={i} className="flex items-start gap-2">
+              <span className="text-success mt-0.5">✓</span>
+              <span>{f}</span>
+            </li>
           ))}
         </ul>
 

@@ -63,25 +63,25 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4">
       <div className="absolute top-4 right-4">
         <LocaleSelector />
       </div>
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.loginTitle')}</h1>
-          <p className="text-gray-600">{t('auth.loginSubtitle')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t('auth.loginTitle')}</h1>
+          <p className="text-muted-foreground">{t('auth.loginSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl text-sm">
               {errors.general}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.email')}
             </label>
             <Input
@@ -92,15 +92,15 @@ export default function Login() {
               onChange={handleChange}
               placeholder={t('auth.emailPlaceholder')}
               required
-              className={errors.email ? 'border-red-500' : ''}
+              className={errors.email ? 'border-destructive' : ''}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.email}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.password')}
             </label>
             <Input
@@ -111,10 +111,10 @@ export default function Login() {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className={errors.password ? 'border-red-500' : ''}
+              className={errors.password ? 'border-destructive' : ''}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.password}</p>
             )}
           </div>
 
@@ -124,19 +124,19 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {t('auth.noAccount')}{' '}
-            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/register" className="text-primary hover:underline font-medium">
               {t('common.signUp')}
             </Link>
           </p>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm font-medium text-blue-900 mb-2">{t('auth.demoAccount')}</p>
-            <p className="text-xs text-blue-700">Email: demo@walletwise.com</p>
-            <p className="text-xs text-blue-700">Password: Demo1234!</p>
+        <div className="mt-8 pt-6 border-t border-border">
+          <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+            <p className="text-sm font-medium text-foreground mb-2">{t('auth.demoAccount')}</p>
+            <p className="text-xs text-muted-foreground">Email: demo@walletwise.com</p>
+            <p className="text-xs text-muted-foreground">Password: Demo1234!</p>
           </div>
         </div>
       </Card>

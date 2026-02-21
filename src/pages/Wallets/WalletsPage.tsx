@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { CrudPopup } from '@/components/ui/CrudPopup'
 import { useQueryClient } from '@tanstack/react-query'
 import { useWallets } from '@/hooks/useWallet'
 import { useAuth } from '@/hooks/useAuth'
@@ -45,6 +46,7 @@ export default function WalletsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState({
     name: '',
     balance: 0,
@@ -112,6 +114,7 @@ export default function WalletsPage() {
       setError(t('wallets.walletNameRequired'))
       return
     }
+    setIsSubmitting(true)
     try {
       await createWallet({
         name: form.name.trim(),
@@ -120,6 +123,7 @@ export default function WalletsPage() {
       })
       setForm({ name: '', balance: 0, currency: 'USD' })
       setIsCreating(false)
+      setError('')
     } catch (err: unknown) {
       const apiErr = err as { error?: { code?: string; message?: string } }
       const isTrialExpired = apiErr?.error?.code === 'PRO_TRIAL_EXPIRED'
@@ -131,17 +135,44 @@ export default function WalletsPage() {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleUpdate = async (id: string, name: string, balance: number) => {
     setError('')
+    setIsSubmitting(true)
     try {
       await updateWallet(id, { name, balance })
       setEditingId(null)
+      setError('')
     } catch (err: unknown) {
       setError((err as { error?: { message?: string } })?.error?.message || t('wallets.updateFailed'))
+    } finally {
+      setIsSubmitting(false)
     }
+  }
+
+  const openCreatePopup = () => {
+    setError('')
+    setForm({ name: '', balance: 0, currency: 'USD' })
+    setIsCreating(true)
+  }
+
+  const closeCreatePopup = () => {
+    setIsCreating(false)
+    setError('')
+  }
+
+  const openEditPopup = (wallet: { id: string; name: string; balance: number }) => {
+    setError('')
+    setEditingId(wallet.id)
+  }
+
+  const closeEditPopup = () => {
+    setEditingId(null)
+    setError('')
   }
 
   const handleDeleteClick = (id: string) => {
@@ -174,8 +205,29 @@ export default function WalletsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-gray-500">{t('common.loading')}</div>
+      <div className="space-y-8">
+        <div>
+          <div className="h-9 w-48 bg-muted rounded-lg animate-pulse" />
+          <div className="h-5 w-64 mt-2 bg-muted rounded animate-pulse" />
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="h-8 w-40 bg-muted rounded animate-pulse" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -183,13 +235,13 @@ export default function WalletsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{t('wallets.title')}</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('wallets.title')}</h1>
+        <p className="text-muted-foreground mt-1">
           {t('wallets.subtitle')} {tier === SubscriptionTier.FREE && (
             <span>
               {t('wallets.subtitleLimit', { current: walletLimit.current, max: walletLimit.max })}
               {' '}
-              <Link to="/billing" className="text-blue-600 hover:underline">
+              <Link to="/billing" className="text-primary hover:underline font-medium">
                 {t('wallets.upgradePro')}
               </Link>
               {' '}
@@ -199,18 +251,16 @@ export default function WalletsPage() {
         </p>
       </div>
 
-      {/* Summary Card */}
+      {/* Summary Card - Digital wallet feel */}
       {wallets.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('wallets.totalBalance')}</CardTitle>
-            <CardDescription>
-              {t('wallets.totalFromWallets', { count: wallets.length })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-gray-900">
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardContent className="p-6">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('wallets.totalBalance')}</p>
+            <p className="text-3xl md:text-4xl font-bold text-foreground mt-1">
               {formatCurrency(effectiveTotalBalance, selectedCurrency)}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {t('wallets.totalFromWallets', { count: wallets.length })}
             </p>
           </CardContent>
         </Card>
@@ -227,79 +277,32 @@ export default function WalletsPage() {
                 : t('wallets.limitReached')}
             </CardDescription>
           </div>
-          {canCreateWallet && !isCreating && (
-            <Button onClick={() => setIsCreating(true)}>
+          {canCreateWallet && (
+            <Button onClick={openCreatePopup} className="hidden md:inline-flex">
               {t('wallets.addWallet')}
             </Button>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {isCreating && (
-            <form onSubmit={handleCreate} className="p-4 border rounded-lg bg-gray-50 space-y-3">
-              <Input
-                placeholder={t('wallets.namePlaceholder')}
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-              <div className="flex gap-3">
-                <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  placeholder={t('wallets.initialBalance')}
-                  value={form.balance || ''}
-                  onChange={(e) => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })}
-                />
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={form.currency}
-                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                >
-                  {CURRENCIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit">{t('common.save')}</Button>
-                <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            </form>
-          )}
-
           {/* Wallet List */}
           <div className="space-y-3">
             {wallets.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p className="text-4xl mb-2">💰</p>
-                <p>{t('wallets.noWallets')}</p>
+              <div className="text-center py-12">
+                <p className="text-4xl mb-3">💰</p>
+                <p className="text-muted-foreground">{t('wallets.noWallets')}</p>
               </div>
             ) : (
               walletsWithFlags.map((wallet) => (
                 <div
                   key={wallet.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className={`flex items-center justify-between p-5 rounded-xl border border-border transition-colors ${
+                    wallet.isFrozenExtra ? 'opacity-60 bg-muted/30' : 'hover:bg-muted/40'
+                  }`}
                 >
-                  {editingId === wallet.id && !wallet.isFrozenExtra ? (
-                    <EditWalletForm
-                      wallet={wallet}
-                      onSave={(name, balance) => handleUpdate(wallet.id, name, balance)}
-                      onCancel={() => setEditingId(null)}
-                    />
-                  ) : (
-                    <>
+                  <>
                       <div>
-                        <p className="font-medium text-gray-900">{wallet.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-foreground">{wallet.name}</p>
+                        <p className="text-sm text-muted-foreground font-medium tabular-nums">
                           {formatCurrency(wallet.balance, wallet.currency)}
                         </p>
                       </div>
@@ -308,7 +311,7 @@ export default function WalletsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setEditingId(wallet.id)}
+                            onClick={() => openEditPopup(wallet)}
                           >
                             {t('common.edit')}
                           </Button>
@@ -316,20 +319,96 @@ export default function WalletsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 hover:text-red-700"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleDeleteClick(wallet.id)}
                         >
                           {t('common.delete')}
                         </Button>
                       </div>
                     </>
-                  )}
                 </div>
               ))
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Wallet Popup */}
+      <CrudPopup
+        open={isCreating}
+        onClose={closeCreatePopup}
+        title={t('wallets.addWallet')}
+        formId="create-wallet-form"
+        primaryLabel={t('common.save')}
+        primaryLoading={isSubmitting}
+        primaryDisabled={!form.name.trim()}
+        secondaryLabel={t('common.cancel')}
+        onSecondaryClick={closeCreatePopup}
+        error={error}
+      >
+        <form id="create-wallet-form" onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('wallets.namePlaceholder')}</label>
+            <Input
+              placeholder={t('wallets.namePlaceholder')}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t('wallets.initialBalance')}</label>
+            <Input
+              type="number"
+              min={0}
+              step={0.01}
+              placeholder={t('wallets.initialBalance')}
+              value={form.balance || ''}
+              onChange={(e) => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Currency</label>
+            <select
+              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              value={form.currency}
+              onChange={(e) => setForm({ ...form, currency: e.target.value })}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+        </form>
+      </CrudPopup>
+
+      {/* Edit Wallet Popup */}
+      {(() => {
+        const walletToEdit = wallets.find((w) => w.id === editingId)
+        if (!walletToEdit) return null
+        return (
+          <EditWalletPopup
+            open={!!editingId}
+            wallet={walletToEdit}
+            onClose={closeEditPopup}
+            onSave={(name, balance) => handleUpdate(walletToEdit.id, name, balance)}
+            error={error}
+            isSubmitting={isSubmitting}
+          />
+        )
+      })()}
+
+      {/* Mobile FAB */}
+      {canCreateWallet && (
+        <button
+          type="button"
+          onClick={openCreatePopup}
+          className="md:hidden fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center text-2xl font-medium hover:bg-primary/90 active:scale-95 transition-all"
+          aria-label={t('wallets.addWallet')}
+        >
+          +
+        </button>
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}
@@ -346,40 +425,69 @@ export default function WalletsPage() {
   )
 }
 
-function EditWalletForm({
+function EditWalletPopup({
+  open,
   wallet,
+  onClose,
   onSave,
-  onCancel,
+  error,
+  isSubmitting,
 }: {
+  open: boolean
   wallet: { name: string; balance: number }
+  onClose: () => void
   onSave: (name: string, balance: number) => void
-  onCancel: () => void
+  error: string
+  isSubmitting: boolean
 }) {
   const { t } = useTranslation()
   const [name, setName] = useState(wallet.name)
   const [balance, setBalance] = useState(wallet.balance)
 
+  useEffect(() => {
+    if (open) {
+      setName(wallet.name)
+      setBalance(wallet.balance)
+    }
+  }, [open, wallet.name, wallet.balance])
+
+  const handleSave = () => {
+    if (!name.trim()) return
+    onSave(name.trim(), balance)
+  }
+
   return (
-    <div className="flex-1 flex gap-2 items-center">
-      <Input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="flex-1"
-      />
-      <Input
-        type="number"
-        min={0}
-        step={0.01}
-        value={balance}
-        onChange={(e) => setBalance(parseFloat(e.target.value) || 0)}
-        className="w-32"
-      />
-      <Button size="sm" onClick={() => onSave(name, balance)}>
-        {t('common.save')}
-      </Button>
-      <Button size="sm" variant="outline" onClick={onCancel}>
-        {t('common.cancel')}
-      </Button>
-    </div>
+    <CrudPopup
+      open={open}
+      onClose={onClose}
+      title={`${t('common.edit')} Wallet`}
+      onPrimaryClick={handleSave}
+      primaryLabel={t('common.save')}
+      primaryLoading={isSubmitting}
+      primaryDisabled={!name.trim()}
+      secondaryLabel={t('common.cancel')}
+      onSecondaryClick={onClose}
+      error={error}
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('wallets.namePlaceholder')}</label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t('wallets.initialBalance')}</label>
+          <Input
+            type="number"
+            min={0}
+            step={0.01}
+            value={balance}
+            onChange={(e) => setBalance(parseFloat(e.target.value) || 0)}
+          />
+        </div>
+      </div>
+    </CrudPopup>
   )
 }

@@ -75,25 +75,25 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-12">
       <div className="absolute top-4 right-4">
         <LocaleSelector />
       </div>
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.registerTitle')}</h1>
-          <p className="text-gray-600">{t('auth.registerSubtitle')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t('auth.registerTitle')}</h1>
+          <p className="text-muted-foreground">{t('auth.registerSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl text-sm">
               {errors.general}
             </div>
           )}
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.fullName')}
             </label>
             <Input
@@ -104,15 +104,15 @@ export default function Register() {
               onChange={handleChange}
               placeholder={t('auth.namePlaceholder')}
               required
-              className={errors.name ? 'border-red-500' : ''}
+              className={errors.name ? 'border-destructive' : ''}
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.name}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.email')}
             </label>
             <Input
@@ -123,15 +123,15 @@ export default function Register() {
               onChange={handleChange}
               placeholder={t('auth.emailPlaceholderRegister')}
               required
-              className={errors.email ? 'border-red-500' : ''}
+              className={errors.email ? 'border-destructive' : ''}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.email}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.password')}
             </label>
             <Input
@@ -142,18 +142,18 @@ export default function Register() {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className={errors.password ? 'border-red-500' : ''}
+              className={errors.password ? 'border-destructive' : ''}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.password}</p>
             )}
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t('auth.passwordHint')}
             </p>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
               {t('auth.confirmPassword')}
             </label>
             <Input
@@ -164,10 +164,10 @@ export default function Register() {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className={errors.confirmPassword ? 'border-red-500' : ''}
+              className={errors.confirmPassword ? 'border-destructive' : ''}
             />
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.confirmPassword}</p>
             )}
           </div>
 
@@ -177,9 +177,9 @@ export default function Register() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {t('auth.hasAccount')}{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/login" className="text-primary hover:underline font-medium">
               {t('common.signIn')}
             </Link>
           </p>
