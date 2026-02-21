@@ -14,11 +14,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
+import { DatePicker } from '@/components/ui/DatePicker'
+import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useAuth } from '@/hooks/useAuth'
+import { format, parseISO, isValid } from 'date-fns'
 import { formatCurrency, formatDate } from '@/utils/format'
 import { TRANSACTION_CATEGORY_LABELS } from '@/utils/constants'
 import {
@@ -48,7 +51,7 @@ export default function TransactionsPage() {
     category: TransactionCategory.FOOD,
     amount: 0,
     description: '',
-    date: new Date().toISOString().slice(0, 16),
+    date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
   })
 
   const {
@@ -96,7 +99,7 @@ export default function TransactionsPage() {
         category: TransactionCategory.FOOD,
         amount: 0,
         description: '',
-        date: new Date().toISOString().slice(0, 16),
+        date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       })
       setIsAdding(false)
       setError('')
@@ -308,21 +311,19 @@ export default function TransactionsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.from')}</label>
-              <Input
-                type="date"
+              <DatePicker
                 value={filters.startDate ?? ''}
-                onChange={(e) =>
-                  setFilters({ ...filters, startDate: e.target.value || undefined })
+                onChange={(v) =>
+                  setFilters({ ...filters, startDate: v || undefined })
                 }
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.to')}</label>
-              <Input
-                type="date"
+              <DatePicker
                 value={filters.endDate ?? ''}
-                onChange={(e) =>
-                  setFilters({ ...filters, endDate: e.target.value || undefined })
+                onChange={(v) =>
+                  setFilters({ ...filters, endDate: v || undefined })
                 }
               />
             </div>
@@ -514,11 +515,9 @@ export default function TransactionsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.date')}</label>
-            <Input
-              type="datetime-local"
-              required
+            <DateTimePicker
               value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              onChange={(v) => setForm({ ...form, date: v })}
             />
           </div>
         </form>
@@ -587,7 +586,16 @@ function EditTransactionPopup({
   const [category, setCategory] = useState(transaction.category)
   const [amount, setAmount] = useState(transaction.amount)
   const [description, setDescription] = useState(transaction.description)
-  const [date, setDate] = useState(transaction.date.slice(0, 16))
+  const toDatetimeLocal = (iso: string) => {
+    try {
+      const d = parseISO(iso)
+      return isValid(d) ? format(d, "yyyy-MM-dd'T'HH:mm") : ''
+    } catch {
+      return ''
+    }
+  }
+
+  const [date, setDate] = useState(() => toDatetimeLocal(transaction.date))
 
   useEffect(() => {
     if (open) {
@@ -595,7 +603,7 @@ function EditTransactionPopup({
       setCategory(transaction.category)
       setAmount(transaction.amount)
       setDescription(transaction.description)
-      setDate(transaction.date.slice(0, 16))
+      setDate(toDatetimeLocal(transaction.date))
     }
   }, [open, transaction.type, transaction.category, transaction.amount, transaction.description, transaction.date])
 
@@ -682,10 +690,9 @@ function EditTransactionPopup({
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.date')}</label>
-          <Input
-            type="datetime-local"
+          <DateTimePicker
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={setDate}
           />
         </div>
       </div>

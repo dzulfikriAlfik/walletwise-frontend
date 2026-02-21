@@ -56,6 +56,12 @@
   }
 }
 
+/* react-datepicker - match app theme */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: hsl(var(--primary)) !important;
+}
+
 @layer base {
   * {
     @apply border-border;
