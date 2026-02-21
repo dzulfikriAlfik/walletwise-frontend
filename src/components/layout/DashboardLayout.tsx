@@ -143,7 +143,7 @@ export default function DashboardLayout() {
                   {t('nav.welcome', { name: user?.profile.name })}
                 </p>
                 <div className="px-2 pb-4">
-                  <SettingsDropdown inline />
+                  <SettingsDropdown inline onSaveSuccess={closeMobileMenu} />
                 </div>
                 <Button
                   variant="outline"
