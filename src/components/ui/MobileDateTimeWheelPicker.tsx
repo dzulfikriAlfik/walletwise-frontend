@@ -15,8 +15,6 @@ const DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm"
 const START_YEAR = 2000
 const END_YEAR = 2030
 
-const localeMap = { en: enUS, id }
-
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
 const MINUTES = ['00', '15', '30', '45']
 

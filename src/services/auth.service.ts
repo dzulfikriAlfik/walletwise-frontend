@@ -35,9 +35,8 @@ interface BackendUser {
 // Transform backend user to frontend User type
 const transformUser = (backendUser: BackendUser): User => {
   const language = backendUser.preferredLanguage === 'id' ? 'id' : 'en'
-  const currency = (['USD', 'IDR', 'EUR'].includes(backendUser.preferredCurrency)
-    ? backendUser.preferredCurrency
-    : 'USD') as 'USD' | 'IDR' | 'EUR'
+  const preferred = backendUser.preferredCurrency ?? ''
+  const currency = (['USD', 'IDR', 'EUR'].includes(preferred) ? preferred : 'USD') as 'USD' | 'IDR' | 'EUR'
 
   return {
     profile: {

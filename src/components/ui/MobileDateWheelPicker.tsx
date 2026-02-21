@@ -15,8 +15,6 @@ const DATE_FORMAT = 'yyyy-MM-dd'
 const START_YEAR = 2000
 const END_YEAR = 2030
 
-const localeMap = { en: enUS, id }
-
 export interface MobileDateWheelPickerProps {
   value: string
   onChange: (value: string) => void

@@ -6,7 +6,6 @@
  */
 
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 export interface TotalBalanceCardProps {
@@ -24,7 +23,6 @@ export function TotalBalanceCard({
   className,
   helpTooltip,
 }: TotalBalanceCardProps) {
-  const { t } = useTranslation()
   const [visible, setVisible] = useState(true)
 
   return (

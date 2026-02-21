@@ -9,15 +9,14 @@ import { useState } from 'react'
 import { parse, format, isValid, parseISO } from 'date-fns'
 import ReactDatePicker, { registerLocale } from 'react-datepicker'
 import { useTranslation } from 'react-i18next'
-import { enUS } from 'date-fns/locale'
-import { id } from 'date-fns/locale'
+import { enUS, id as idLocale } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileDateTimeWheelPicker } from '@/components/ui/MobileDateTimeWheelPicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
 registerLocale('en', enUS)
-registerLocale('id', id)
+registerLocale('id', idLocale)
 
 export interface DateTimePickerProps {
   value: string
@@ -63,7 +62,8 @@ export function DateTimePicker({
   const displayValue = value
     ? (() => {
         const d = toDate(value)
-        return d ? format(d, DISPLAY_FORMAT, { locale: i18n.language === 'id' ? id : enUS }) : ''
+        const loc = i18n.language === 'id' ? idLocale : enUS
+        return d ? format(d, DISPLAY_FORMAT, { locale: loc }) : ''
       })()
     : ''
 
