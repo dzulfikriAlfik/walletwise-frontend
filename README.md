@@ -55,16 +55,16 @@ WalletWise is a budgeting and expense tracking SaaS application that helps users
 
 The frontend consumes the WalletWise Backend API. For full API documentation, see the [walletwise-backend](https://github.com/dzulfikriAlfik/walletwise-backend) repository.
 
-**Base URL:** `http://localhost:3000/api` (development)
+**Base URL:** `http://localhost:3000/api/v1` (development)
 
 Key endpoints used:
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/profile` - Get current user profile
-- `GET /api/wallets` - List wallets
-- `POST /api/wallets` - Create wallet
-- `PATCH /api/wallets/:id` - Update wallet
-- `DELETE /api/wallets/:id` - Delete wallet
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User login
+- `GET /api/v1/auth/profile` - Get current user profile
+- `GET /api/v1/wallets` - List wallets
+- `POST /api/v1/wallets` - Create wallet
+- `PATCH /api/v1/wallets/:id` - Update wallet
+- `DELETE /api/v1/wallets/:id` - Delete wallet
 
 ## How to Run Locally
 
@@ -111,7 +111,7 @@ npm run preview
 Copy `.env.example` to `.env` for development. For production build, copy `.env.production.example` to `.env.production`:
 
 ```
-VITE_API_BASE_URL=http://localhost:3000/api   # Backend API base URL
+VITE_API_BASE_URL=http://localhost:3000/api/v1   # Backend API base URL
 VITE_API_TIMEOUT=30000                         # Request timeout (ms, optional)
 ```
 

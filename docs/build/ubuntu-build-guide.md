@@ -99,7 +99,7 @@ Example `.env.production`:
 
 ```env
 # Backend API - adjust to your production backend URL
-VITE_API_BASE_URL=https://walletwise-backend.pintarware.com/api
+VITE_API_BASE_URL=https://walletwise-backend.pintarware.com/api/v1
 
 # API request timeout (optional)
 VITE_API_TIMEOUT=30000
