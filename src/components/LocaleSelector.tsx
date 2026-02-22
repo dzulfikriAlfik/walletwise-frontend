@@ -3,7 +3,7 @@
  */
 
 import { useTranslation } from 'react-i18next'
-import { LOCALES, type LocaleCode } from '@/i18n'
+import { LOCALES } from '@/i18n'
 import { SelectSimple } from '@/components/ui/Select'
 
 export function LocaleSelector() {
