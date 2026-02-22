@@ -63,7 +63,6 @@ export function PaymentModal({
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       style={{
-        minHeight: '100vh',
         minHeight: '100dvh',
         backgroundColor: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(4px)',

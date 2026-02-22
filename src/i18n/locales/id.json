@@ -179,6 +179,8 @@
     "to": "Sampai",
     "noTransactions": "Belum ada transaksi",
     "createFirst": "Tambah transaksi pertama untuk memulai",
+    "addWalletFirst": "Sebelum menambahkan transaksi pertama anda, mulailah dengan menambahkan dompet",
+    "searchCategory": "Cari kategori...",
     "editTransaction": "Edit Transaksi",
     "deleteTransaction": "Hapus Transaksi",
     "deleteConfirm": "Hapus transaksi ini?",

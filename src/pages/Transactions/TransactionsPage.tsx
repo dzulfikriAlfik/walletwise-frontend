@@ -19,6 +19,7 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
 import { SelectSimple } from '@/components/ui/Select'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { Link } from 'react-router-dom'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
@@ -384,7 +385,7 @@ export default function TransactionsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-              <SelectSimple
+              <SearchableSelect
                 value={filters.category ?? '__all__'}
                 onValueChange={(v) =>
                   setFilters({
@@ -396,6 +397,7 @@ export default function TransactionsPage() {
                   { value: '__all__', label: t('transactions.allCategories') },
                   ...categoryOptions.map((c) => ({ value: c.id, label: c.name })),
                 ]}
+                placeholder={t('transactions.searchCategory', 'Search category...')}
               />
             </div>
             <div>
@@ -468,6 +470,13 @@ export default function TransactionsPage() {
           {/* Grouped Transaction List (Money Lover style) */}
           {groupedTransactions.length === 0 || (transactions ?? []).length === 0 ? (
             <div className="text-center py-12">
+              {wallets.length === 0 && (
+                <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400">
+                  <p className="text-sm font-medium">
+                    {t('transactions.addWalletFirst', 'Sebelum menambahkan transaksi pertama anda, mulailah dengan menambahkan dompet')}
+                  </p>
+                </div>
+              )}
               <p className="text-4xl mb-2">📝</p>
               <p className="text-muted-foreground">{t('transactions.noTransactions')}</p>
               <p className="text-sm text-muted-foreground mt-1">{t('transactions.createFirst')}</p>
@@ -559,13 +568,14 @@ export default function TransactionsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-            <SelectSimple
+            <SearchableSelect
               value={form.category}
               onValueChange={(v) => setForm({ ...form, category: v })}
               options={(form.type === TransactionType.INCOME
                 ? incomeCategoryOptions
                 : expenseCategoryOptions
               ).map((c) => ({ value: c.id, label: c.name }))}
+              placeholder={t('transactions.searchCategory', 'Search category...')}
             />
           </div>
           <div>
@@ -791,13 +801,14 @@ function EditTransactionPopup({
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-          <SelectSimple
+          <SearchableSelect
             value={category}
             onValueChange={setCategory}
             options={categoryOptionsForType.map((c: { id: string; name: string; type: string }) => ({
               value: c.id,
               label: c.name,
             }))}
+            placeholder={t('transactions.searchCategory', 'Search category...')}
           />
         </div>
         <div>

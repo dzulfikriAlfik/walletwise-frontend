@@ -179,6 +179,8 @@
     "to": "To",
     "noTransactions": "No transactions yet",
     "createFirst": "Add your first transaction to get started",
+    "addWalletFirst": "Before adding your first transaction, start by adding a wallet",
+    "searchCategory": "Search category...",
     "editTransaction": "Edit Transaction",
     "deleteTransaction": "Delete Transaction",
     "deleteConfirm": "Delete this transaction?",
