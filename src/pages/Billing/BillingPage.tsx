@@ -48,6 +48,8 @@ export default function BillingPage() {
     queryFn: billingService.getPlans,
   })
 
+  const [pendingInvoicePopup, setPendingInvoicePopup] = useState<{ invoiceUrl: string } | null>(null)
+
   const createPaymentMutation = useMutation({
     mutationFn: billingService.createPayment,
     onSuccess: (data) => {
@@ -66,7 +68,13 @@ export default function BillingPage() {
       } else if (data.redirectUrl) {
         window.location.href = data.redirectUrl
       } else if (data.invoiceUrl) {
-        window.location.href = data.invoiceUrl
+        if (data.message === 'Reusing existing pending invoice') {
+          setSelectedPlan(null)
+          setPendingInvoicePopup({ invoiceUrl: data.invoiceUrl })
+        } else {
+          window.open(data.invoiceUrl, '_blank', 'noopener,noreferrer')
+          setSelectedPlan(null)
+        }
       } else {
         setSelectedPlan(null)
       }
@@ -215,6 +223,45 @@ export default function BillingPage() {
         <p className="text-sm text-destructive">
           {(createPaymentMutation.error as { error?: { message?: string } })?.error?.message || t('billing.paymentFailed')}
         </p>
+      )}
+
+      {/* Pending payment popup - existing invoice */}
+      {pendingInvoicePopup && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={(e) => e.target === e.currentTarget && setPendingInvoicePopup(null)}
+        >
+          <div
+            className="bg-card rounded-xl shadow-xl border border-border p-6 max-w-sm w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
+              {t('billing.pendingPaymentTitle')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('billing.pendingPaymentDesc')}
+            </p>
+            <a
+              href={pendingInvoicePopup.invoiceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center py-2.5 px-4 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+            >
+              {t('billing.openPaymentPage')}
+            </a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setPendingInvoicePopup(null)}
+            >
+              {t('common.cancel')}
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

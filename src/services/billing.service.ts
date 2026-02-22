@@ -32,6 +32,7 @@ export interface CreatePaymentResult {
   redirectUrl?: string
   invoiceUrl?: string
   expiresAt?: string
+  message?: string
   subscription?: {
     tier: string
     isActive: boolean
