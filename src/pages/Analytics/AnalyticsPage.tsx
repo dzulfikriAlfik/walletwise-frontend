@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
 import { useWallets } from '@/hooks/useWallet'
+import { useCategories } from '@/hooks/useCategory'
 import { useAuth } from '@/hooks/useAuth'
 import { transactionService } from '@/services/transaction.service'
 import { useQuery } from '@tanstack/react-query'
@@ -29,6 +30,11 @@ export default function AnalyticsPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { wallets } = useWallets()
+  const { categoryOptions } = useCategories()
+  const getCategoryLabel = (categoryId: string) =>
+    categoryOptions.find((c) => c.id === categoryId)?.name ??
+    (TRANSACTION_CATEGORY_LABELS as Record<string, string>)[categoryId] ??
+    categoryId
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -198,7 +204,7 @@ export default function AnalyticsPage() {
                         className="flex items-center justify-between py-2 border-b border-border last:border-0"
                       >
                         <span className="font-medium text-foreground">
-                          {TRANSACTION_CATEGORY_LABELS[category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? category}
+                          {getCategoryLabel(category)}
                         </span>
                         <span className="font-semibold text-destructive tabular-nums">
                           −{formatCurrency(total, selectedCurrency)}

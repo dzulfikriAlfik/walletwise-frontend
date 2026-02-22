@@ -16,6 +16,7 @@ const navItems: Array<{ to: string; labelKey: string; onNavigate?: boolean }> = 
   { to: '/dashboard', labelKey: 'nav.dashboard' },
   { to: '/wallets', labelKey: 'nav.wallets', onNavigate: true },
   { to: '/transactions', labelKey: 'nav.transactions' },
+  { to: '/categories', labelKey: 'nav.categories' },
   { to: '/analytics', labelKey: 'nav.analytics' },
   { to: '/billing', labelKey: 'nav.billing' },
 ]

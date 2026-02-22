@@ -33,7 +33,7 @@ export interface Transaction {
   id: string
   walletId: string
   type: TransactionType
-  category: TransactionCategory
+  category: string // system key or custom category id
   amount: number
   description: string
   date: string
@@ -45,7 +45,7 @@ export interface Transaction {
 export interface CreateTransactionData {
   walletId: string
   type: TransactionType
-  category: TransactionCategory
+  category: string // system key (e.g. 'food') or custom category id
   amount: number
   description: string
   date: string
@@ -53,7 +53,7 @@ export interface CreateTransactionData {
 
 export interface UpdateTransactionData {
   type?: TransactionType
-  category?: TransactionCategory
+  category?: string
   amount?: number
   description?: string
   date?: string
@@ -62,7 +62,7 @@ export interface UpdateTransactionData {
 export interface TransactionFilters {
   walletId?: string
   type?: TransactionType
-  category?: TransactionCategory
+  category?: string
   startDate?: string
   endDate?: string
   minAmount?: number

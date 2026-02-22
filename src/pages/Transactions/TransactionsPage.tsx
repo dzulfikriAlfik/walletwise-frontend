@@ -21,6 +21,7 @@ import { CrudPopup } from '@/components/ui/CrudPopup'
 import { Link } from 'react-router-dom'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
+import { useCategories } from '@/hooks/useCategory'
 import { useAuth } from '@/hooks/useAuth'
 import { transactionService } from '@/services/transaction.service'
 import { SUBSCRIPTION_LIMITS } from '@/utils/constants'
@@ -31,7 +32,6 @@ import { convertCurrency } from '@/utils/currency'
 import { TRANSACTION_CATEGORY_LABELS } from '@/utils/constants'
 import {
   TransactionType,
-  TransactionCategory,
   type CreateTransactionData,
   type UpdateTransactionData,
   type TransactionFilters,
@@ -41,6 +41,7 @@ export default function TransactionsPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { wallets } = useWallets()
+  const { categoryOptions } = useCategories()
 
   const [filters, setFilters] = useState<TransactionFilters>({})
   const [isAdding, setIsAdding] = useState(false)
@@ -57,7 +58,7 @@ export default function TransactionsPage() {
   const [form, setForm] = useState<CreateTransactionData>({
     walletId: '',
     type: TransactionType.EXPENSE,
-    category: TransactionCategory.FOOD,
+    category: 'food',
     amount: 0,
     description: '',
     date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
@@ -98,14 +99,18 @@ export default function TransactionsPage() {
     }
   }, [isAdding, wallets, form.walletId])
 
-  const categoryOptions = useMemo(
-    () =>
-      [
-        [TransactionCategory.SALARY, TransactionCategory.FREELANCE, TransactionCategory.INVESTMENT, TransactionCategory.OTHER_INCOME],
-        [TransactionCategory.FOOD, TransactionCategory.TRANSPORT, TransactionCategory.ENTERTAINMENT, TransactionCategory.BILLS, TransactionCategory.SHOPPING, TransactionCategory.HEALTH, TransactionCategory.EDUCATION, TransactionCategory.OTHER_EXPENSE],
-      ].flat(),
-    []
+  const incomeCategoryOptions = useMemo(
+    () => categoryOptions.filter((c) => c.type === 'income'),
+    [categoryOptions]
   )
+  const expenseCategoryOptions = useMemo(
+    () => categoryOptions.filter((c) => c.type === 'expense'),
+    [categoryOptions]
+  )
+  const getCategoryLabel = (categoryId: string) =>
+    categoryOptions.find((c) => c.id === categoryId)?.name ??
+    TRANSACTION_CATEGORY_LABELS[categoryId as keyof typeof TRANSACTION_CATEGORY_LABELS] ??
+    categoryId
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,7 +128,7 @@ export default function TransactionsPage() {
       setForm({
         walletId: wallets[0]?.id ?? '',
         type: TransactionType.EXPENSE,
-        category: TransactionCategory.FOOD,
+        category: expenseCategoryOptions[0]?.id ?? 'food',
         amount: 0,
         description: '',
         date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
@@ -156,10 +161,10 @@ export default function TransactionsPage() {
 
   const openAddPopup = () => {
     setError('')
-      setForm({
+    setForm({
       walletId: wallets[0]?.id ?? '',
       type: TransactionType.EXPENSE,
-      category: TransactionCategory.FOOD,
+      category: expenseCategoryOptions[0]?.id ?? 'food',
       amount: 0,
       description: '',
       date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
@@ -344,14 +349,14 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setFilters({
                     ...filters,
-                    category: (e.target.value || undefined) as TransactionCategory | undefined,
+                    category: e.target.value || undefined,
                   })
                 }
               >
                 <option value="">{t('transactions.allCategories')}</option>
                 {categoryOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </select>
@@ -447,7 +452,7 @@ export default function TransactionsPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-foreground">{tx.description || '—'}</p>
                         <p className="text-sm text-muted-foreground">
-                          {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
+                          {getCategoryLabel(tx.category)} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
@@ -521,16 +526,17 @@ export default function TransactionsPage() {
             <select
               className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               value={form.type}
-              onChange={(e) =>
+              onChange={(e) => {
+                const newType = e.target.value as TransactionType
                 setForm({
                   ...form,
-                  type: e.target.value as TransactionType,
+                  type: newType,
                   category:
-                    e.target.value === TransactionType.INCOME
-                      ? TransactionCategory.SALARY
-                      : TransactionCategory.FOOD,
+                    newType === TransactionType.INCOME
+                      ? incomeCategoryOptions[0]?.id ?? 'salary'
+                      : expenseCategoryOptions[0]?.id ?? 'food',
                 })
-              }
+              }}
             >
               <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
               <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
@@ -542,30 +548,14 @@ export default function TransactionsPage() {
               required
               className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value as TransactionCategory })
-              }
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
             >
               {(form.type === TransactionType.INCOME
-                ? [
-                    TransactionCategory.SALARY,
-                    TransactionCategory.FREELANCE,
-                    TransactionCategory.INVESTMENT,
-                    TransactionCategory.OTHER_INCOME,
-                  ]
-                : [
-                    TransactionCategory.FOOD,
-                    TransactionCategory.TRANSPORT,
-                    TransactionCategory.ENTERTAINMENT,
-                    TransactionCategory.BILLS,
-                    TransactionCategory.SHOPPING,
-                    TransactionCategory.HEALTH,
-                    TransactionCategory.EDUCATION,
-                    TransactionCategory.OTHER_EXPENSE,
-                  ]
+                ? incomeCategoryOptions
+                : expenseCategoryOptions
               ).map((c) => (
-                <option key={c} value={c}>
-                  {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -608,6 +598,8 @@ export default function TransactionsPage() {
           <EditTransactionPopup
             open={!!editingId}
             transaction={txToEdit}
+            incomeCategoryOptions={incomeCategoryOptions}
+            expenseCategoryOptions={expenseCategoryOptions}
             onClose={closeEditPopup}
             onSave={(data) => handleUpdate(txToEdit.id, data)}
             error={error}
@@ -646,6 +638,8 @@ export default function TransactionsPage() {
 function EditTransactionPopup({
   open,
   transaction,
+  incomeCategoryOptions,
+  expenseCategoryOptions,
   onClose,
   onSave,
   error,
@@ -653,6 +647,8 @@ function EditTransactionPopup({
 }: {
   open: boolean
   transaction: { type: string; category: string; amount: number; description: string; date: string }
+  incomeCategoryOptions: Array<{ id: string; name: string; type: string }>
+  expenseCategoryOptions: Array<{ id: string; name: string; type: string }>
   onClose: () => void
   onSave: (data: UpdateTransactionData) => void
   error: string
@@ -661,6 +657,8 @@ function EditTransactionPopup({
   const { t } = useTranslation()
   const [type, setType] = useState(transaction.type)
   const [category, setCategory] = useState(transaction.category)
+  const categoryOptionsForType =
+    type === TransactionType.INCOME ? incomeCategoryOptions : expenseCategoryOptions
   const [amount, setAmount] = useState(transaction.amount)
   const [description, setDescription] = useState(transaction.description)
   const toDatetimeLocal = (iso: string) => {
@@ -684,25 +682,10 @@ function EditTransactionPopup({
     }
   }, [open, transaction.type, transaction.category, transaction.amount, transaction.description, transaction.date])
 
-  const categoryOptions = [
-    TransactionCategory.SALARY,
-    TransactionCategory.FREELANCE,
-    TransactionCategory.INVESTMENT,
-    TransactionCategory.OTHER_INCOME,
-    TransactionCategory.FOOD,
-    TransactionCategory.TRANSPORT,
-    TransactionCategory.ENTERTAINMENT,
-    TransactionCategory.BILLS,
-    TransactionCategory.SHOPPING,
-    TransactionCategory.HEALTH,
-    TransactionCategory.EDUCATION,
-    TransactionCategory.OTHER_EXPENSE,
-  ]
-
   const handleSave = () => {
     onSave({
       type: type as TransactionType,
-      category: category as TransactionCategory,
+      category,
       amount,
       description,
       date: new Date(date).toISOString(),
@@ -728,7 +711,12 @@ function EditTransactionPopup({
           <select
             className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             value={type}
-            onChange={(e) => setType(e.target.value)}
+            onChange={(e) => {
+              const newType = e.target.value as TransactionType
+              setType(newType)
+              const opts = newType === TransactionType.INCOME ? incomeCategoryOptions : expenseCategoryOptions
+              setCategory(opts[0]?.id ?? (newType === TransactionType.INCOME ? 'salary' : 'food'))
+            }}
           >
             <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
             <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
@@ -741,9 +729,9 @@ function EditTransactionPopup({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            {categoryOptions.map((c) => (
-              <option key={c} value={c}>
-                {TRANSACTION_CATEGORY_LABELS[c as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? c}
+            {categoryOptionsForType.map((c: { id: string; name: string; type: string }) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>

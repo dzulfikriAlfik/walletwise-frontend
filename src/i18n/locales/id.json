@@ -17,6 +17,7 @@
     "dashboard": "Dashboard",
     "wallets": "Dompet",
     "transactions": "Transaksi",
+    "categories": "Kategori",
     "analytics": "Analitik",
     "billing": "Tagihan",
     "welcome": "Selamat datang, {{name}}"
@@ -173,5 +174,27 @@
     "monthlyTrend": "Tren Bulanan",
     "monthlyTrendDesc": "Pemasukan vs pengeluaran per bulan",
     "noData": "Tidak ada transaksi di periode yang dipilih."
+  },
+  "categories": {
+    "title": "Kategori",
+    "subtitle": "Buat kategori pemasukan dan pengeluaran kustom.",
+    "proRequired": "Langganan Pro atau Pro Trial aktif diperlukan untuk kategori kustom.",
+    "upgradePro": "Upgrade ke Pro",
+    "addCategory": "Tambah Kategori",
+    "editCategory": "Edit Kategori",
+    "customCount": "{{count}} kategori kustom",
+    "incomeCategories": "Kategori Pemasukan",
+    "incomeCategoriesDesc": "Kategori kustom untuk transaksi pemasukan",
+    "expenseCategories": "Kategori Pengeluaran",
+    "expenseCategoriesDesc": "Kategori kustom untuk transaksi pengeluaran",
+    "noCategories": "Belum ada kategori kustom",
+    "type": "Tipe",
+    "name": "Nama",
+    "namePlaceholder": "Nama kategori",
+    "nameRequired": "Nama kategori wajib diisi",
+    "createFailed": "Gagal membuat kategori",
+    "updateFailed": "Gagal memperbarui kategori",
+    "deleteTitle": "Hapus Kategori",
+    "deleteMessage": "Hapus kategori ini? Transaksi yang menggunakannya akan tetap menyimpan nilai kategori."
   }
 }

@@ -15,6 +15,7 @@ import WalletsPage from '@/pages/Wallets/WalletsPage'
 import BillingPage from '@/pages/Billing/BillingPage'
 import TransactionsPage from '@/pages/Transactions/TransactionsPage'
 import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
+import CategoriesPage from '@/pages/Categories/CategoriesPage'
 
 /**
  * Protected Route Component
@@ -133,6 +134,20 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <AnalyticsPage />,
+      },
+    ],
+  },
+  {
+    path: '/categories',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <CategoriesPage />,
       },
     ],
   },

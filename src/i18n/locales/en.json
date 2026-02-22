@@ -17,6 +17,7 @@
     "dashboard": "Dashboard",
     "wallets": "Wallets",
     "transactions": "Transactions",
+    "categories": "Categories",
     "analytics": "Analytics",
     "billing": "Billing",
     "welcome": "Welcome, {{name}}"
@@ -173,5 +174,27 @@
     "monthlyTrend": "Monthly Trend",
     "monthlyTrendDesc": "Income vs expense by month",
     "noData": "No transactions in the selected period."
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Create custom income and expense categories.",
+    "proRequired": "Pro subscription or active Pro Trial required for custom categories.",
+    "upgradePro": "Upgrade to Pro",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "customCount": "{{count}} custom categor{{count, plural, one {y} other {ies}}}",
+    "incomeCategories": "Income Categories",
+    "incomeCategoriesDesc": "Custom categories for income transactions",
+    "expenseCategories": "Expense Categories",
+    "expenseCategoriesDesc": "Custom categories for expense transactions",
+    "noCategories": "No custom categories yet",
+    "type": "Type",
+    "name": "Name",
+    "namePlaceholder": "Category name",
+    "nameRequired": "Category name is required",
+    "createFailed": "Failed to create category",
+    "updateFailed": "Failed to update category",
+    "deleteTitle": "Delete Category",
+    "deleteMessage": "Delete this category? Transactions using it will keep the category value."
   }
 }

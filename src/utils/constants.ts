@@ -40,6 +40,7 @@ export const ROUTES = {
   TRANSACTIONS: '/transactions',
   ANALYTICS: '/analytics',
   BILLING: '/billing',
+  CATEGORIES: '/categories',
   PROFILE: '/profile',
   SETTINGS: '/settings',
 } as const
@@ -56,21 +57,25 @@ export const SUBSCRIPTION_LIMITS = {
     MAX_WALLETS: 3,
     ANALYTICS: false,
     EXPORT: false,
+    CUSTOM_CATEGORIES: false,
   },
   [SubscriptionTier.PRO_TRIAL]: {
     MAX_WALLETS: null, // unlimited during active trial (handled via trial dates)
     ANALYTICS: false,
     EXPORT: false,
+    CUSTOM_CATEGORIES: true, // while trial active (expired = same as free)
   },
   [SubscriptionTier.PRO]: {
     MAX_WALLETS: null, // unlimited
     ANALYTICS: false,
     EXPORT: false,
+    CUSTOM_CATEGORIES: true,
   },
   [SubscriptionTier.PRO_PLUS]: {
     MAX_WALLETS: null, // unlimited
     ANALYTICS: true,
     EXPORT: true,
+    CUSTOM_CATEGORIES: true,
   },
 } as const
 
@@ -144,5 +149,6 @@ export const QUERY_KEYS = {
   WALLET: (id: string) => ['wallet', id],
   TRANSACTIONS: ['transactions'],
   TRANSACTION: (id: string) => ['transaction', id],
+  CATEGORIES: ['categories'],
   SUBSCRIPTION: ['subscription'],
 } as const

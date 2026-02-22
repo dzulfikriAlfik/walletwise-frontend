@@ -6,6 +6,7 @@ This document tracks pending tasks and completed items for the WalletWise fronte
 
 ## Recently Completed
 
+- [x] **Categories Page** – Custom category CRUD, Pro/Pro Trial gated (`/categories`)
 - [x] **Analytics Page** – Spending by category, monthly trend, Pro+ gated (`/analytics`)
 - [x] **CSV/Excel Export** – Export buttons on Transactions page (Pro+ tier)
 - [x] **Dashboard** – Wallet/transaction summary, recent transactions, quick links
@@ -17,6 +18,10 @@ This document tracks pending tasks and completed items for the WalletWise fronte
 
 - [x] **Analytics Dashboard** – Implement analytics UI (Pro+ tier)
 - [x] **CSV/Excel Export** – Implement export UI (Pro+ tier)
+
+## Pro / Pro Trial Features
+
+- [x] **Categories Page** – Custom category CRUD (`/categories`), Pro/Pro Trial gated
 
 ---
 

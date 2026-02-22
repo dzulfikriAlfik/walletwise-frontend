@@ -24,6 +24,14 @@ export type {
   WalletLimit,
 } from './wallet'
 
+// Category types
+export type {
+  Category,
+  CategoryOption,
+  CreateCategoryData,
+  UpdateCategoryData,
+} from './category'
+
 // Transaction types
 export type {
   Transaction,

@@ -41,15 +41,17 @@ WalletWise is a budgeting and expense tracking SaaS application that helps users
 - Income & expense tracking
 - Wallet-based budgeting
 - Transaction history (daily / weekly / monthly)
+- Custom category management (Pro / Pro Trial)
 - Responsive dashboard UI
 
 ### Subscription Features
 | Feature | Free | Pro |
 |---------|------|-----|
 | Wallet limit | Up to 3 | Unlimited |
+| Custom categories | System only | ✅ |
 | Transaction tracking | ✅ | ✅ |
 | Financial summary | Basic | Advanced |
-| Data export | ❌ | ✅ |
+| Data export | ❌ | ✅ (Pro+) |
 
 ## API Documentation
 

@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button'
 import { TotalBalanceCard } from '@/components/TotalBalanceCard'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
+import { useCategories } from '@/hooks/useCategory'
 import { useAuth } from '@/hooks/useAuth'
 import { QUERY_KEYS } from '@/utils/constants'
 import { formatCurrency } from '@/utils/format'
@@ -30,10 +31,16 @@ export default function DashboardPage() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const { wallets, isLoading: walletsLoading } = useWallets()
+  const { categoryOptions } = useCategories()
   const {
     transactions,
     isLoading: transactionsLoading,
   } = useTransactions()
+
+  const getCategoryLabel = (categoryId: string) =>
+    categoryOptions.find((c) => c.id === categoryId)?.name ??
+    (TRANSACTION_CATEGORY_LABELS as Record<string, string>)[categoryId] ??
+    categoryId
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
@@ -223,7 +230,7 @@ export default function DashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground truncate">{tx.description || '—'}</p>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {TRANSACTION_CATEGORY_LABELS[tx.category as keyof typeof TRANSACTION_CATEGORY_LABELS] ?? tx.category} • {new Date(tx.date).toLocaleDateString()}
+                      {getCategoryLabel(tx.category)} • {new Date(tx.date).toLocaleDateString()}
                     </p>
                   </div>
                   <p
