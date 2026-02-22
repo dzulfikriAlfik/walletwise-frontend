@@ -20,7 +20,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
 import { SelectSimple } from '@/components/ui/Select'
 import { SearchableSelect } from '@/components/ui/SearchableSelect'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '@/utils/constants'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useCategories } from '@/hooks/useCategory'
@@ -46,9 +48,40 @@ import {
   getBucketForTransaction,
 } from '@/utils/transactionGroups'
 
+function formatTierForDisplay(tier: string | null): string {
+  if (!tier) return ''
+  const map: Record<string, string> = {
+    pro: 'Pro',
+    pro_plus: 'Pro+',
+    pro_trial: 'Pro Trial',
+  }
+  return map[tier] ?? tier.replace(/_/g, ' ')
+}
+
 export default function TransactionsPage() {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
+
+  const [paymentSuccessPopup, setPaymentSuccessPopup] = useState<{ tier: string } | null>(null)
+
+  useEffect(() => {
+    const xenditPayment = searchParams.get('xenditPayment')
+    const tier = searchParams.get('tier')
+    if (xenditPayment === 'success' && tier) {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+      setPaymentSuccessPopup({ tier })
+    }
+  }, [searchParams, queryClient])
+
+  const closePaymentSuccessPopup = () => {
+    setPaymentSuccessPopup(null)
+    const next = new URLSearchParams(searchParams)
+    next.delete('xenditPayment')
+    next.delete('tier')
+    setSearchParams(next.size ? next : {}, { replace: true })
+  }
   const { wallets } = useWallets()
   const { categoryOptions } = useCategories()
   const { rates } = useFxRates()
@@ -649,6 +682,35 @@ export default function TransactionsPage() {
         variant="destructive"
         isLoading={isDeleting}
       />
+
+      {/* Xendit payment success popup */}
+      {paymentSuccessPopup && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={(e) => e.target === e.currentTarget && closePaymentSuccessPopup()}
+        >
+          <div
+            className="bg-card rounded-xl shadow-xl border border-border p-6 max-w-sm w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-base font-semibold text-success">
+              {t('transactions.paymentSuccessTitle')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('transactions.paymentSuccessMessage', {
+                tier: formatTierForDisplay(paymentSuccessPopup.tier),
+              })}
+            </p>
+            <Button className="w-full" onClick={closePaymentSuccessPopup}>
+              {t('common.ok')}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

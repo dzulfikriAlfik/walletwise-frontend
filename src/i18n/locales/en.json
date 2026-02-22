@@ -198,7 +198,9 @@
     "deleteFailed": "Failed to delete transaction",
     "summary": "Summary",
     "exportFailed": "Export failed",
-    "exportProPlus": "Export (Pro+)"
+    "exportProPlus": "Export (Pro+)",
+    "paymentSuccessTitle": "Payment received",
+    "paymentSuccessMessage": "Your payment has been received. Enjoy the {{tier}} features of WalletWise."
   },
   "analytics": {
     "title": "Analytics",

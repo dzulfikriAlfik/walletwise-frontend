@@ -198,7 +198,9 @@
     "deleteFailed": "Gagal menghapus transaksi",
     "summary": "Ringkasan",
     "exportFailed": "Ekspor gagal",
-    "exportProPlus": "Ekspor (Pro+)"
+    "exportProPlus": "Ekspor (Pro+)",
+    "paymentSuccessTitle": "Pembayaran diterima",
+    "paymentSuccessMessage": "Pembayaran Anda telah diterima. Nikmati fitur {{tier}} WalletWise."
   },
   "analytics": {
     "title": "Analitik",
