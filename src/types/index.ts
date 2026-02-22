@@ -8,6 +8,8 @@ export type {
   UserProfile,
   Subscription,
   SupportedCurrency,
+  TransactionTimeRange,
+  FirstDayOfWeek,
   AuthTokens,
   LoginCredentials,
   RegisterData,

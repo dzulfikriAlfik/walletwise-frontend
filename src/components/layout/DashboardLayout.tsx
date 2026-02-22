@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
-import { SettingsDropdown } from '@/components/SettingsDropdown'
 import { QUERY_KEYS } from '@/utils/constants'
 
 const navItems: Array<{ to: string; labelKey: string; onNavigate?: boolean }> = [
@@ -19,6 +18,7 @@ const navItems: Array<{ to: string; labelKey: string; onNavigate?: boolean }> = 
   { to: '/categories', labelKey: 'nav.categories' },
   { to: '/analytics', labelKey: 'nav.analytics' },
   { to: '/billing', labelKey: 'nav.billing' },
+  { to: '/settings', labelKey: 'nav.settings' },
 ]
 
 export default function DashboardLayout() {
@@ -80,7 +80,6 @@ export default function DashboardLayout() {
               <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
                 {t('nav.welcome', { name: user?.profile.name })}
               </span>
-              <SettingsDropdown />
               <Button
                 variant="outline"
                 size="sm"
@@ -144,9 +143,6 @@ export default function DashboardLayout() {
                 <p className="px-4 py-2 text-sm text-muted-foreground">
                   {t('nav.welcome', { name: user?.profile.name })}
                 </p>
-                <div className="px-2 pb-4">
-                  <SettingsDropdown inline onSaveSuccess={closeMobileMenu} />
-                </div>
                 <Button
                   variant="outline"
                   className="w-full justify-center"

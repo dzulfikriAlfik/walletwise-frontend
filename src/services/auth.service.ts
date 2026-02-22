@@ -22,6 +22,8 @@ interface BackendUser {
   avatarUrl: string | null
   preferredLanguage?: string | null
   preferredCurrency?: string | null
+  transactionTimeRange?: string | null
+  firstDayOfWeek?: number | null
   subscription: {
     tier: string
     isActive: boolean
@@ -37,6 +39,13 @@ const transformUser = (backendUser: BackendUser): User => {
   const language = backendUser.preferredLanguage === 'id' ? 'id' : 'en'
   const preferred = backendUser.preferredCurrency ?? ''
   const currency = (['USD', 'IDR', 'EUR'].includes(preferred) ? preferred : 'USD') as 'USD' | 'IDR' | 'EUR'
+
+  const tr = backendUser.transactionTimeRange
+  const fdow = backendUser.firstDayOfWeek ?? 0
+  const transactionTimeRange = ['daily', 'weekly', 'monthly'].includes(tr || '')
+    ? (tr as 'daily' | 'weekly' | 'monthly')
+    : 'weekly'
+  const firstDayOfWeek = fdow >= 0 && fdow <= 6 ? (fdow as 0 | 1 | 2 | 3 | 4 | 5 | 6) : 0
 
   return {
     profile: {
@@ -56,6 +65,8 @@ const transformUser = (backendUser: BackendUser): User => {
     settings: {
       language,
       currency,
+      transactionTimeRange,
+      firstDayOfWeek,
     },
   }
 }
@@ -99,16 +110,19 @@ export const authService = {
   },
 
   /**
-   * Update user settings (language, currency)
+   * Update user settings (language, currency, transaction display)
    */
   updateSettings: async (settings: {
-    language: 'en' | 'id'
-    currency: 'USD' | 'IDR' | 'EUR'
+    language?: 'en' | 'id'
+    currency?: 'USD' | 'IDR' | 'EUR'
+    transactionTimeRange?: 'daily' | 'weekly' | 'monthly'
+    firstDayOfWeek?: number
   }): Promise<User> => {
-    const payload = {
-      preferredLanguage: settings.language,
-      preferredCurrency: settings.currency,
-    }
+    const payload: Record<string, unknown> = {}
+    if (settings.language != null) payload.preferredLanguage = settings.language
+    if (settings.currency != null) payload.preferredCurrency = settings.currency
+    if (settings.transactionTimeRange != null) payload.transactionTimeRange = settings.transactionTimeRange
+    if (settings.firstDayOfWeek != null) payload.firstDayOfWeek = settings.firstDayOfWeek
     const { data } = await apiClient.patch<any>('/auth/profile', payload)
     return transformUser(data.data)
   },

@@ -23,6 +23,7 @@ import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useCategories } from '@/hooks/useCategory'
 import { useAuth } from '@/hooks/useAuth'
+import { useFxRates } from '@/hooks/useFxRates'
 import { transactionService } from '@/services/transaction.service'
 import { SUBSCRIPTION_LIMITS } from '@/utils/constants'
 import { SubscriptionTier } from '@/types'
@@ -35,13 +36,25 @@ import {
   type CreateTransactionData,
   type UpdateTransactionData,
   type TransactionFilters,
+  type Transaction,
 } from '@/types'
+import {
+  getTransactionBuckets,
+  getDateRangeForFetch,
+  getBucketForTransaction,
+} from '@/utils/transactionGroups'
 
 export default function TransactionsPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { wallets } = useWallets()
   const { categoryOptions } = useCategories()
+  const { rates } = useFxRates()
+
+  const timeRange = user?.settings?.transactionTimeRange ?? 'weekly'
+  const firstDayOfWeek = (user?.settings?.firstDayOfWeek ?? 0) as 0 | 1 | 2 | 3 | 4 | 5 | 6
+  const buckets = getTransactionBuckets(timeRange, firstDayOfWeek)
+  const { startDate, endDate } = getDateRangeForFetch(timeRange, firstDayOfWeek)
 
   const [filters, setFilters] = useState<TransactionFilters>({})
   const [isAdding, setIsAdding] = useState(false)
@@ -64,13 +77,22 @@ export default function TransactionsPage() {
     date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
   })
 
+  const effectiveFilters = useMemo(
+    () => ({
+      ...filters,
+      startDate: filters.startDate ?? startDate,
+      endDate: filters.endDate ?? endDate,
+    }),
+    [filters, startDate, endDate]
+  )
+
   const {
     transactions,
     isLoading,
     createTransaction,
     updateTransaction,
     deleteTransaction,
-  } = useTransactions(filters)
+  } = useTransactions(effectiveFilters)
 
   const selectedCurrency = (user?.settings?.currency || 'USD') as string
 
@@ -81,7 +103,12 @@ export default function TransactionsPage() {
     let totalExpense = 0
     for (const tx of list) {
       const walletCurrency = tx.wallet?.currency ?? 'USD'
-      const converted = convertCurrency(tx.amount, walletCurrency, selectedCurrency)
+      const converted = convertCurrency(
+        tx.amount,
+        walletCurrency,
+        selectedCurrency,
+        rates
+      )
       if (tx.type === TransactionType.INCOME) totalIncome += converted
       else totalExpense += converted
     }
@@ -91,7 +118,24 @@ export default function TransactionsPage() {
       balance: totalIncome - totalExpense,
       transactionCount: list.length,
     }
-  }, [transactions, selectedCurrency])
+  }, [transactions, selectedCurrency, rates])
+
+  const groupedTransactions = useMemo(() => {
+    const list = transactions ?? []
+    const map = new Map<string, Transaction[]>()
+    for (const b of buckets) {
+      map.set(b.id, [])
+    }
+    for (const tx of list) {
+      const b = getBucketForTransaction(tx.date, buckets)
+      if (b) {
+        const arr = map.get(b.id) ?? []
+        arr.push(tx)
+        map.set(b.id, arr)
+      }
+    }
+    return buckets.map((b) => ({ bucket: b, transactions: map.get(b.id) ?? [] }))
+  }, [transactions, buckets])
 
   useEffect(() => {
     if (isAdding && wallets.length > 0 && !form.walletId) {
@@ -210,7 +254,7 @@ export default function TransactionsPage() {
     setIsExporting(true)
     setError('')
     try {
-      const blob = await transactionService.exportTransactions(format, filters)
+      const blob = await transactionService.exportTransactions(format, effectiveFilters)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -427,67 +471,50 @@ export default function TransactionsPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Transaction List */}
-          <div className="space-y-2">
-            {(transactions ?? []).length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-4xl mb-2">📝</p>
-                <p className="text-muted-foreground">{t('transactions.noTransactions')}</p>
-                <p className="text-sm text-muted-foreground mt-1">{t('transactions.createFirst')}</p>
-                {wallets.length > 0 && (
-                  <Button className="mt-4" onClick={openAddPopup}>
-                    {t('transactions.addTransaction')}
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {(transactions ?? []).map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4 first:pt-0 last:pb-0"
-                >
-                  <>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">{tx.description || '—'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {getCategoryLabel(tx.category)} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
-                        </p>
+        <CardContent className="space-y-6">
+          {/* Grouped Transaction List (Money Lover style) */}
+          {groupedTransactions.length === 0 || (transactions ?? []).length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-4xl mb-2">📝</p>
+              <p className="text-muted-foreground">{t('transactions.noTransactions')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('transactions.createFirst')}</p>
+              {wallets.length > 0 && (
+                <Button className="mt-4" onClick={openAddPopup}>
+                  {t('transactions.addTransaction')}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {groupedTransactions.map(({ bucket, transactions: txList }) => (
+                <div key={bucket.id}>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 sticky top-16 py-2 bg-card/95 backdrop-blur z-10">
+                    {bucket.label}
+                  </h3>
+                  <div className="divide-y divide-border rounded-xl border border-border bg-muted/20 overflow-hidden">
+                    {txList.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        —
                       </div>
-                      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-                        <p
-                          className={`font-semibold tabular-nums shrink-0 ${
-                            tx.type === TransactionType.INCOME ? 'text-success' : 'text-destructive'
-                          }`}
-                        >
-                          {tx.type === TransactionType.INCOME ? '+' : '−'}
-                          {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditPopup(tx)}
-                          >
-                            {t('common.edit')}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeleteTarget(tx.id)}
-                          >
-                            {t('common.delete')}
-                          </Button>
-                        </div>
-                      </div>
-                  </>
+                    ) : (
+                      txList.map((tx) => (
+                        <TransactionRow
+                          key={tx.id}
+                          tx={tx}
+                          getCategoryLabel={getCategoryLabel}
+                          selectedCurrency={selectedCurrency}
+                          rates={rates}
+                          onEdit={() => openEditPopup(tx)}
+                          onDelete={() => setDeleteTarget(tx.id)}
+                          t={t}
+                        />
+                      ))
+                    )}
+                  </div>
                 </div>
               ))}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -631,6 +658,65 @@ export default function TransactionsPage() {
         variant="destructive"
         isLoading={isDeleting}
       />
+    </div>
+  )
+}
+
+function TransactionRow({
+  tx,
+  getCategoryLabel,
+  selectedCurrency,
+  rates,
+  onEdit,
+  onDelete,
+  t,
+}: {
+  tx: Transaction
+  getCategoryLabel: (id: string) => string
+  selectedCurrency: string
+  rates: Record<string, number>
+  onEdit: () => void
+  onDelete: () => void
+  t: (key: string) => string
+}) {
+  const amount =
+    tx.wallet?.currency && tx.wallet.currency !== selectedCurrency
+      ? convertCurrency(tx.amount, tx.wallet.currency, selectedCurrency, rates)
+      : tx.amount
+  const displayCurrency =
+    tx.wallet?.currency === selectedCurrency ? tx.wallet.currency : selectedCurrency
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4 px-4 first:pt-4">
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-foreground">{tx.description || '—'}</p>
+        <p className="text-sm text-muted-foreground">
+          {getCategoryLabel(tx.category)} • {formatDate(tx.date)} • {tx.wallet?.name ?? tx.walletId}
+        </p>
+      </div>
+      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+        <p
+          className={`font-semibold tabular-nums shrink-0 ${
+            tx.type === TransactionType.INCOME ? 'text-success' : 'text-destructive'
+          }`}
+        >
+          {tx.type === TransactionType.INCOME ? '+' : '−'}
+          {formatCurrency(amount, displayCurrency)}
+        </p>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            {t('common.edit')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={onDelete}
+          >
+            {t('common.delete')}
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

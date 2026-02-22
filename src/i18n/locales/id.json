@@ -20,6 +20,7 @@
     "categories": "Kategori",
     "analytics": "Analitik",
     "billing": "Tagihan",
+    "settings": "Pengaturan",
     "welcome": "Selamat datang, {{name}}"
   },
   "home": {
@@ -116,8 +117,34 @@
   },
   "settings": {
     "title": "Pengaturan",
+    "subtitle": "Kelola preferensi dan konfigurasi aplikasi",
     "language": "Bahasa",
-    "currency": "Mata uang"
+    "currency": "Mata uang",
+    "general": "Umum",
+    "generalDesc": "Preferensi bahasa dan mata uang",
+    "transactionDisplay": "Tampilan Transaksi",
+    "transactionDisplayDesc": "Cara transaksi dikelompokkan di halaman Transaksi",
+    "timeRangeLabel": "Rentang Waktu",
+    "timeRangeHint": "Harian: 7 hari. Mingguan: minggu bulan ini. Bulanan: bulan tahun ini.",
+    "timeRange": {
+      "daily": "Harian (7 hari)",
+      "weekly": "Mingguan (bulan ini)",
+      "monthly": "Bulanan (tahun ini)"
+    },
+    "firstDayOfWeekLabel": "Hari Pertama Mingguan",
+    "firstDayOfWeek": {
+      "sunday": "Minggu",
+      "monday": "Senin",
+      "tuesday": "Selasa",
+      "wednesday": "Rabu",
+      "thursday": "Kamis",
+      "friday": "Jumat",
+      "saturday": "Sabtu"
+    },
+    "exchangeRates": "Kurs Mata Uang",
+    "exchangeRatesDesc": "Perbarui kurs konversi dari API gratis",
+    "lastUpdated": "Terakhir diperbarui",
+    "updateRates": "Perbarui Kurs"
   },
   "dashboard": {
     "title": "Dashboard",

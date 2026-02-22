@@ -30,9 +30,16 @@ export interface UserProfile {
 
 export type SupportedCurrency = 'USD' | 'IDR' | 'EUR'
 
+export type TransactionTimeRange = 'daily' | 'weekly' | 'monthly'
+
+/** 0=Sunday, 1=Monday, ..., 6=Saturday */
+export type FirstDayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
 export interface UserSettings {
   language: 'en' | 'id'
   currency: SupportedCurrency
+  transactionTimeRange?: TransactionTimeRange
+  firstDayOfWeek?: FirstDayOfWeek
 }
 
 export interface User {

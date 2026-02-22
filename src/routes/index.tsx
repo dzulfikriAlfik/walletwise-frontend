@@ -16,6 +16,7 @@ import BillingPage from '@/pages/Billing/BillingPage'
 import TransactionsPage from '@/pages/Transactions/TransactionsPage'
 import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
 import CategoriesPage from '@/pages/Categories/CategoriesPage'
+import SettingsPage from '@/pages/Settings/SettingsPage'
 
 /**
  * Protected Route Component
@@ -148,6 +149,20 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <CategoriesPage />,
+      },
+    ],
+  },
+  {
+    path: '/settings',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <SettingsPage />,
       },
     ],
   },

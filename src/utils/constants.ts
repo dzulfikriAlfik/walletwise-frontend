@@ -151,4 +151,23 @@ export const QUERY_KEYS = {
   TRANSACTION: (id: string) => ['transaction', id],
   CATEGORIES: ['categories'],
   SUBSCRIPTION: ['subscription'],
+  FX_RATES: ['fx-rates'],
 } as const
+
+/** Transaction time range options (Money Lover style) */
+export const TRANSACTION_TIME_RANGES = [
+  { value: 'daily' as const, labelKey: 'settings.timeRange.daily' },
+  { value: 'weekly' as const, labelKey: 'settings.timeRange.weekly' },
+  { value: 'monthly' as const, labelKey: 'settings.timeRange.monthly' },
+] as const
+
+/** First day of week options (0=Sunday, 1=Monday, ...) */
+export const FIRST_DAY_OF_WEEK_OPTIONS = [
+  { value: 0 as const, labelKey: 'settings.firstDayOfWeek.sunday' },
+  { value: 1 as const, labelKey: 'settings.firstDayOfWeek.monday' },
+  { value: 2 as const, labelKey: 'settings.firstDayOfWeek.tuesday' },
+  { value: 3 as const, labelKey: 'settings.firstDayOfWeek.wednesday' },
+  { value: 4 as const, labelKey: 'settings.firstDayOfWeek.thursday' },
+  { value: 5 as const, labelKey: 'settings.firstDayOfWeek.friday' },
+  { value: 6 as const, labelKey: 'settings.firstDayOfWeek.saturday' },
+] as const

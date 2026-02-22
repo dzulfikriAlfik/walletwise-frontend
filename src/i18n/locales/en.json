@@ -20,6 +20,7 @@
     "categories": "Categories",
     "analytics": "Analytics",
     "billing": "Billing",
+    "settings": "Settings",
     "welcome": "Welcome, {{name}}"
   },
   "home": {
@@ -116,8 +117,34 @@
   },
   "settings": {
     "title": "Settings",
+    "subtitle": "Manage your preferences and app configuration",
     "language": "Language",
-    "currency": "Currency"
+    "currency": "Currency",
+    "general": "General",
+    "generalDesc": "Language and currency preferences",
+    "transactionDisplay": "Transaction Display",
+    "transactionDisplayDesc": "How transactions are grouped on the Transactions page",
+    "timeRangeLabel": "Time Range",
+    "timeRangeHint": "Daily: 7 days. Weekly: weeks of current month. Monthly: months of current year.",
+    "timeRange": {
+      "daily": "Daily (7 days)",
+      "weekly": "Weekly (current month)",
+      "monthly": "Monthly (current year)"
+    },
+    "firstDayOfWeekLabel": "First Day of Week",
+    "firstDayOfWeek": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "exchangeRates": "Exchange Rates",
+    "exchangeRatesDesc": "Update currency conversion rates from a free API",
+    "lastUpdated": "Last updated",
+    "updateRates": "Update Rates"
   },
   "dashboard": {
     "title": "Dashboard",
