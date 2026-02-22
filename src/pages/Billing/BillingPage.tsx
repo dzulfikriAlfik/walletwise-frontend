@@ -1,12 +1,11 @@
 /**
  * Billing Page
- * Subscription plans and dummy payment upgrade
+ * Subscription plans and payment (Stripe / Xendit)
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button } from '@/components/ui/Button'
 import {
   Card,
   CardContent,
@@ -14,70 +13,69 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 import { billingService, type BillingPlans } from '@/services/billing.service'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSubscriptionSocket } from '@/hooks/useSubscriptionSocket'
+import { PaymentModal } from '@/components/PaymentModal'
 import { QUERY_KEYS } from '@/utils/constants'
 import { SubscriptionTier } from '@/types'
 
 export default function BillingPage() {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams, queryClient])
   const updateUser = useAuthStore((s) => s.updateUser)
+
+  useSubscriptionSocket()
 
   const [selectedPlan, setSelectedPlan] = useState<'pro_trial' | 'pro' | 'pro_plus' | null>(null)
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
-  const [cardNumber, setCardNumber] = useState('')
-  const [expiry, setExpiry] = useState('')
-  const [cvv, setCvv] = useState('')
-  const [formError, setFormError] = useState('')
 
   const { data: plans, isLoading } = useQuery({
     queryKey: ['billing', 'plans'],
     queryFn: billingService.getPlans,
   })
 
-  const upgradeMutation = useMutation({
-    mutationFn: (params: {
-      targetTier: 'pro_trial' | 'pro' | 'pro_plus'
-      billingPeriod: 'monthly' | 'yearly'
-      cardNumber: string
-      expiry: string
-      cvv: string
-    }) =>
-      billingService.dummyPayment({
-        targetTier: params.targetTier,
-        billingPeriod: params.billingPeriod,
-        cardNumber: params.cardNumber,
-        expiry: params.expiry,
-        cvv: params.cvv,
-      }),
+  const createPaymentMutation = useMutation({
+    mutationFn: billingService.createPayment,
     onSuccess: (data) => {
-      // Update user subscription in store
-      updateUser({
-        subscription: {
-          tier: data.subscription.tier as SubscriptionTier,
-          isActive: true,
-          startDate: data.subscription.startDate,
-          endDate: data.subscription.endDate || undefined,
-        },
-      })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
-      setSelectedPlan(null)
-      setCardNumber('')
-      setExpiry('')
-      setCvv('')
-      setFormError('')
+      if (data.status === 'paid' && data.subscription) {
+        updateUser({
+          subscription: {
+            tier: data.subscription.tier as SubscriptionTier,
+            isActive: true,
+            startDate: new Date().toISOString(),
+            endDate: data.subscription.endDate,
+          },
+        })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
+        setSelectedPlan(null)
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl
+      } else if (data.invoiceUrl) {
+        window.location.href = data.invoiceUrl
+      } else {
+        setSelectedPlan(null)
+      }
     },
   })
 
   const rawTier = user?.subscription?.tier || 'free'
   const subEndDate = user?.subscription?.endDate
 
-  // When pro_trial expired: display as Free, show upgrade buttons, but disable Free Trial
   const effectiveDisplayTier =
     rawTier === SubscriptionTier.PRO_TRIAL && subEndDate
       ? (() => {
@@ -89,26 +87,29 @@ export default function BillingPage() {
         })()
       : rawTier
 
-  // Show Pro Trial only for free users; hide when already on trial or subscribed (Pro/Pro Plus)
   const showProTrial = rawTier === SubscriptionTier.FREE
 
   const handleUpgrade = (tier: 'pro_trial' | 'pro' | 'pro_plus') => {
     setSelectedPlan(tier)
   }
 
-  const handleConfirmPayment = () => {
+  const handleSelectGateway = (gateway: 'stripe' | 'xendit', method: 'card' | 'invoice' | 'va' | 'ewallet' | 'qris') => {
     if (!selectedPlan) return
-    if (!cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
-      setFormError(t('billing.cardRequired'))
-      return
-    }
-    setFormError('')
-    upgradeMutation.mutate({
+    createPaymentMutation.mutate({
       targetTier: selectedPlan,
       billingPeriod,
-      cardNumber,
-      expiry,
-      cvv,
+      gateway,
+      method: method === 'card' ? 'card' : 'invoice',
+    })
+  }
+
+  const handleActivateTrial = () => {
+    if (!selectedPlan || selectedPlan !== 'pro_trial') return
+    createPaymentMutation.mutate({
+      targetTier: 'pro_trial',
+      billingPeriod: 'monthly',
+      gateway: 'stripe',
+      method: 'card',
     })
   }
 
@@ -151,7 +152,6 @@ export default function BillingPage() {
         </p>
       </div>
 
-      {/* Billing period toggle */}
       <div className="flex gap-2 p-1 rounded-xl bg-muted/50 w-fit">
         <Button
           variant={billingPeriod === 'monthly' ? 'default' : 'outline'}
@@ -169,9 +169,7 @@ export default function BillingPage() {
         </Button>
       </div>
 
-      {/* Plans Grid */}
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Free Plan */}
         <PlanCard
           plan={plans.free}
           currentTier={rawTier}
@@ -179,7 +177,6 @@ export default function BillingPage() {
           billingPeriod={billingPeriod}
         />
 
-        {/* Pro Plan */}
         <PlanCard
           plan={plans.pro}
           currentTier={rawTier}
@@ -190,7 +187,6 @@ export default function BillingPage() {
           canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE || effectiveDisplayTier === SubscriptionTier.PRO_TRIAL}
         />
 
-        {/* Pro+ Plan */}
         <PlanCard
           plan={plans.pro_plus}
           currentTier={rawTier}
@@ -205,83 +201,20 @@ export default function BillingPage() {
         />
       </div>
 
-      {/* Dummy Payment Modal */}
-      {selectedPlan && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>{t('billing.dummyPayment')}</CardTitle>
-                <CardDescription>
-                  {t('billing.dummyPaymentDesc')}
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {selectedPlan === 'pro_trial'
-                  ? t('billing.upgradeToProTrial', { days: plans.pro.trialDays })
-                  : t('billing.upgradeTo', {
-                      tier: selectedPlan.replace('_', '+'),
-                      period: billingPeriod,
-                    })}
-              </p>
-              <div className="space-y-2">
-                <Input
-                  placeholder={t('billing.cardPlaceholder')}
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  autoComplete="off"
-                  required
-                />
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="MM/YY"
-                    value={expiry}
-                    onChange={(e) => setExpiry(e.target.value)}
-                    autoComplete="off"
-                    required
-                  />
-                  <Input
-                    placeholder="CVV"
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value)}
-                    autoComplete="off"
-                    required
-                  />
-                </div>
-              </div>
+      <PaymentModal
+        isOpen={!!selectedPlan}
+        onClose={() => setSelectedPlan(null)}
+        selectedPlan={selectedPlan!}
+        billingPeriod={billingPeriod}
+        onSelectGateway={handleSelectGateway}
+        onActivateTrial={handleActivateTrial}
+        isLoading={createPaymentMutation.isPending}
+      />
 
-              {formError && (
-                <p className="text-sm text-destructive">
-                  {formError}
-                </p>
-              )}
-
-              {upgradeMutation.isError && (
-                <p className="text-sm text-destructive">
-                  {(upgradeMutation.error as { error?: { message?: string } })?.error?.message || t('billing.paymentFailed')}
-                </p>
-              )}
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleConfirmPayment}
-                  disabled={upgradeMutation.isPending}
-                >
-                  {upgradeMutation.isPending ? t('common.processing') : t('billing.pay')}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedPlan(null)}
-                  disabled={upgradeMutation.isPending}
-                >
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      {createPaymentMutation.isError && (
+        <p className="text-sm text-destructive">
+          {(createPaymentMutation.error as { error?: { message?: string } })?.error?.message || t('billing.paymentFailed')}
+        </p>
       )}
     </div>
   )

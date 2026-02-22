@@ -1,6 +1,6 @@
 /**
  * Billing Service
- * Handles subscription upgrade and plan fetching
+ * Handles subscription plans and payment creation
  */
 
 import { apiClient } from './api/client'
@@ -25,18 +25,17 @@ interface PlanInfo {
   export: boolean
 }
 
-export interface UpgradeResult {
-  subscription: {
+export interface CreatePaymentResult {
+  paymentId: string
+  gatewayRef: string
+  status: string
+  redirectUrl?: string
+  invoiceUrl?: string
+  expiresAt?: string
+  subscription?: {
     tier: string
     isActive: boolean
-    startDate: string
-    endDate: string | null
-  }
-  payment: {
-    amount: number
-    currency: string
-    billingPeriod: string
-    isTrial: boolean
+    endDate: string
   }
 }
 
@@ -46,26 +45,13 @@ export const billingService = {
     return data.data
   },
 
-  upgrade: async (params: {
+  createPayment: async (params: {
     targetTier: 'pro_trial' | 'pro' | 'pro_plus'
-    billingPeriod?: 'monthly' | 'yearly'
-    useTrial?: boolean
-  }): Promise<UpgradeResult> => {
-    const { data } = await apiClient.post<ApiResponse<UpgradeResult>>('/billing/upgrade', params)
-    return data.data
-  },
-
-  dummyPayment: async (params: {
-    targetTier: 'pro_trial' | 'pro' | 'pro_plus'
-    billingPeriod?: 'monthly' | 'yearly'
-    cardNumber: string
-    expiry: string
-    cvv: string
-  }): Promise<UpgradeResult & { paymentStatus: string; transactionId: string }> => {
-    const { data } = await apiClient.post<ApiResponse<UpgradeResult & { paymentStatus: string; transactionId: string }>>(
-      '/billing/dummy-payment',
-      params
-    )
+    billingPeriod: 'monthly' | 'yearly'
+    gateway: 'stripe' | 'xendit'
+    method: 'card' | 'invoice' | 'va' | 'ewallet' | 'qris'
+  }): Promise<CreatePaymentResult> => {
+    const { data } = await apiClient.post<ApiResponse<CreatePaymentResult>>('/payments/create', params)
     return data.data
   },
 }
