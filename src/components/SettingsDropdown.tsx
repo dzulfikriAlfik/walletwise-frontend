@@ -11,9 +11,11 @@ import type { SupportedCurrency } from '@/types'
 export interface SettingsDropdownProps {
   /** When true, render settings inline (no dropdown) - for mobile drawer to avoid cut-off */
   inline?: boolean
+  /** Called when save succeeds - e.g. to close mobile drawer */
+  onSaveSuccess?: () => void
 }
 
-export function SettingsDropdown({ inline = false }: SettingsDropdownProps) {
+export function SettingsDropdown({ inline = false, onSaveSuccess }: SettingsDropdownProps) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const { user, updateUser } = useAuthStore()
@@ -47,6 +49,7 @@ export function SettingsDropdown({ inline = false }: SettingsDropdownProps) {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
       setOpen(false)
       setError('')
+      onSaveSuccess?.()
     },
     onError: (err: unknown) => {
       setError(

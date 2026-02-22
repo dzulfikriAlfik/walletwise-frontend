@@ -11,6 +11,7 @@ import type {
   UpdateTransactionData,
   TransactionFilters,
   TransactionSummary,
+  TransactionAnalytics,
   PaginatedResponse,
   QueryParams,
 } from '@/types'
@@ -93,5 +94,36 @@ export const transactionService = {
       { params: filters }
     )
     return data.data
+  },
+
+  /**
+   * Get analytics (Pro+ only)
+   */
+  getAnalytics: async (filters?: TransactionFilters): Promise<TransactionAnalytics> => {
+    const { data } = await apiClient.get<ApiResponse<TransactionAnalytics>>(
+      '/transactions/analytics',
+      { params: filters }
+    )
+    return data.data
+  },
+
+  /**
+   * Export transactions as CSV or Excel (Pro+ only)
+   * Returns blob for download
+   */
+  exportTransactions: async (
+    format: 'csv' | 'excel',
+    filters?: TransactionFilters
+  ): Promise<Blob> => {
+    const params = new URLSearchParams({ format })
+    if (filters?.walletId) params.set('walletId', filters.walletId)
+    if (filters?.type) params.set('type', filters.type)
+    if (filters?.category) params.set('category', filters.category)
+    if (filters?.startDate) params.set('startDate', filters.startDate)
+    if (filters?.endDate) params.set('endDate', filters.endDate)
+    const res = await apiClient.get(`/transactions/export?${params}`, {
+      responseType: 'blob',
+    })
+    return res.data as Blob
   },
 }

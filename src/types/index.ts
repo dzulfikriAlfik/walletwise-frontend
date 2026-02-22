@@ -31,6 +31,7 @@ export type {
   UpdateTransactionData,
   TransactionFilters,
   TransactionSummary,
+  TransactionAnalytics,
 } from './transaction'
 export { TransactionType, TransactionCategory, TransactionPeriod } from './transaction'
 

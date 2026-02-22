@@ -17,6 +17,7 @@
     "dashboard": "Dashboard",
     "wallets": "Wallet",
     "transactions": "Transaksi",
+    "analytics": "Analitik",
     "billing": "Billing",
     "welcome": "Selamat datang, {{name}}"
   },
@@ -156,6 +157,21 @@
     "createFailed": "Gagal membuat transaksi",
     "updateFailed": "Gagal memperbarui transaksi",
     "deleteFailed": "Gagal menghapus transaksi",
-    "summary": "Ringkasan"
+    "summary": "Ringkasan",
+    "exportFailed": "Ekspor gagal",
+    "exportProPlus": "Ekspor (Pro+)"
+  },
+  "analytics": {
+    "title": "Analitik",
+    "subtitle": "Wawasan pengeluaran dan tren",
+    "proPlusRequired": "Berlangganan Pro+ diperlukan untuk analitik.",
+    "upgradePrompt": "Upgrade ke Pro+ untuk melihat pengeluaran per kategori, tren pemasukan, dan ringkasan bulanan.",
+    "upgradeToProPlus": "Upgrade ke Pro+",
+    "filterDescription": "Filter analitik menurut rentang tanggal dan wallet",
+    "spendingByCategory": "Pengeluaran per Kategori",
+    "spendingByCategoryDesc": "Rincian pengeluaran per kategori",
+    "monthlyTrend": "Tren Bulanan",
+    "monthlyTrendDesc": "Pemasukan vs pengeluaran per bulan",
+    "noData": "Tidak ada transaksi di periode yang dipilih."
   }
 }

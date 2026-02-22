@@ -38,6 +38,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   WALLETS: '/wallets',
   TRANSACTIONS: '/transactions',
+  ANALYTICS: '/analytics',
   BILLING: '/billing',
   PROFILE: '/profile',
   SETTINGS: '/settings',

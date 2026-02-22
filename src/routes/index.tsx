@@ -14,6 +14,7 @@ import DashboardPage from '@/pages/Dashboard/DashboardPage'
 import WalletsPage from '@/pages/Wallets/WalletsPage'
 import BillingPage from '@/pages/Billing/BillingPage'
 import TransactionsPage from '@/pages/Transactions/TransactionsPage'
+import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
 
 /**
  * Protected Route Component
@@ -118,6 +119,20 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <TransactionsPage />,
+      },
+    ],
+  },
+  {
+    path: '/analytics',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <AnalyticsPage />,
       },
     ],
   },

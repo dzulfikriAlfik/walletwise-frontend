@@ -18,9 +18,13 @@ import { DatePicker } from '@/components/ui/DatePicker'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
+import { Link } from 'react-router-dom'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
 import { useAuth } from '@/hooks/useAuth'
+import { transactionService } from '@/services/transaction.service'
+import { SUBSCRIPTION_LIMITS } from '@/utils/constants'
+import { SubscriptionTier } from '@/types'
 import { format, parseISO, isValid } from 'date-fns'
 import { formatCurrency, formatDate } from '@/utils/format'
 import { convertCurrency } from '@/utils/currency'
@@ -44,7 +48,11 @@ export default function TransactionsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState('')
+
+  const tier = user?.subscription?.tier ?? SubscriptionTier.FREE
+  const canExport = SUBSCRIPTION_LIMITS[tier]?.EXPORT ?? false
 
   const [form, setForm] = useState<CreateTransactionData>({
     walletId: '',
@@ -190,6 +198,26 @@ export default function TransactionsPage() {
 
   const handleDeleteCancel = () => {
     if (!isDeleting) setDeleteTarget(null)
+  }
+
+  const handleExport = async (format: 'csv' | 'excel') => {
+    if (!canExport) return
+    setIsExporting(true)
+    setError('')
+    try {
+      const blob = await transactionService.exportTransactions(format, filters)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `transactions-${new Date().toISOString().slice(0, 10)}.${format === 'csv' ? 'csv' : 'xlsx'}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      const msg = (err as { error?: { message?: string } })?.error?.message ?? t('transactions.exportFailed', 'Export failed')
+      setError(msg)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   if (isLoading) {
@@ -352,16 +380,47 @@ export default function TransactionsPage() {
 
       {/* Add / List */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
           <div>
             <CardTitle>{t('transactions.title')}</CardTitle>
             <CardDescription>{t('transactions.subtitle')}</CardDescription>
           </div>
-          {wallets.length > 0 && (
-            <Button onClick={openAddPopup} className="hidden md:inline-flex">
-              {t('transactions.addTransaction')}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {canExport && (
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExport('csv')}
+                  disabled={isExporting || (transactions ?? []).length === 0}
+                  className="hidden sm:inline-flex"
+                >
+                  {isExporting ? t('common.processing') : 'CSV'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExport('excel')}
+                  disabled={isExporting || (transactions ?? []).length === 0}
+                  className="hidden sm:inline-flex"
+                >
+                  {isExporting ? t('common.processing') : 'Excel'}
+                </Button>
+              </div>
+            )}
+            {!canExport && (transactions ?? []).length > 0 && (
+              <Link to="/billing">
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                  {t('transactions.exportProPlus', 'Export (Pro+)')}
+                </Button>
+              </Link>
+            )}
+            {wallets.length > 0 && (
+              <Button onClick={openAddPopup} className="hidden md:inline-flex">
+                {t('transactions.addTransaction')}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Transaction List */}

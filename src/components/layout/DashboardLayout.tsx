@@ -16,6 +16,7 @@ const navItems: Array<{ to: string; labelKey: string; onNavigate?: boolean }> = 
   { to: '/dashboard', labelKey: 'nav.dashboard' },
   { to: '/wallets', labelKey: 'nav.wallets', onNavigate: true },
   { to: '/transactions', labelKey: 'nav.transactions' },
+  { to: '/analytics', labelKey: 'nav.analytics' },
   { to: '/billing', labelKey: 'nav.billing' },
 ]
 
@@ -143,7 +144,7 @@ export default function DashboardLayout() {
                   {t('nav.welcome', { name: user?.profile.name })}
                 </p>
                 <div className="px-2 pb-4">
-                  <SettingsDropdown inline />
+                  <SettingsDropdown inline onSaveSuccess={closeMobileMenu} />
                 </div>
                 <Button
                   variant="outline"

@@ -84,3 +84,20 @@ export interface TransactionSummary {
   transactionCount: number
   byCategory?: Array<{ category: string; total: number; count: number }>
 }
+
+export interface TransactionAnalytics {
+  summary: {
+    totalIncome: number
+    totalExpense: number
+    balance: number
+    transactionCount: number
+  }
+  spendingByCategory: Array<{ category: string; total: number }>
+  incomeByCategory: Array<{ category: string; total: number }>
+  monthlyTrend: Array<{
+    month: string
+    income: number
+    expense: number
+    balance: number
+  }>
+}

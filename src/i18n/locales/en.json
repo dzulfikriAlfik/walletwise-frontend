@@ -17,6 +17,7 @@
     "dashboard": "Dashboard",
     "wallets": "Wallets",
     "transactions": "Transactions",
+    "analytics": "Analytics",
     "billing": "Billing",
     "welcome": "Welcome, {{name}}"
   },
@@ -156,6 +157,21 @@
     "createFailed": "Failed to create transaction",
     "updateFailed": "Failed to update transaction",
     "deleteFailed": "Failed to delete transaction",
-    "summary": "Summary"
+    "summary": "Summary",
+    "exportFailed": "Export failed",
+    "exportProPlus": "Export (Pro+)"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Spending insights and trends",
+    "proPlusRequired": "Pro+ subscription required for analytics.",
+    "upgradePrompt": "Upgrade to Pro+ to view spending by category, income trends, and monthly breakdowns.",
+    "upgradeToProPlus": "Upgrade to Pro+",
+    "filterDescription": "Filter analytics by date range and wallet",
+    "spendingByCategory": "Spending by Category",
+    "spendingByCategoryDesc": "Breakdown of expenses by category",
+    "monthlyTrend": "Monthly Trend",
+    "monthlyTrendDesc": "Income vs expense by month",
+    "noData": "No transactions in the selected period."
   }
 }
