@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
+import { SelectSimple } from '@/components/ui/Select'
 import { useQueryClient } from '@tanstack/react-query'
 import { useWallets } from '@/hooks/useWallet'
 import { useAuth } from '@/hooks/useAuth'
@@ -361,15 +362,11 @@ export default function WalletsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Currency</label>
-            <select
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            <SelectSimple
               value={form.currency}
-              onChange={(e) => setForm({ ...form, currency: e.target.value })}
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+              onValueChange={(v) => setForm({ ...form, currency: v })}
+              options={CURRENCIES.map((c) => ({ value: c.value, label: c.label }))}
+            />
           </div>
         </form>
       </CrudPopup>

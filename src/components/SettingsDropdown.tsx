@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
 import { LOCALES, type LocaleCode } from '@/i18n'
 import { CURRENCIES, QUERY_KEYS } from '@/utils/constants'
+import { SelectSimple } from '@/components/ui/Select'
 import { useAuthStore } from '@/stores/auth.store'
 import { authService } from '@/services/auth.service'
 import type { SupportedCurrency } from '@/types'
@@ -69,15 +70,14 @@ export function SettingsDropdown({ inline = false, onSaveSuccess }: SettingsDrop
     }
   }
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as LocaleCode
-    setLanguage(value)
-    i18n.changeLanguage(value)
+  const handleLanguageChange = (value: string) => {
+    const v = value as LocaleCode
+    setLanguage(v)
+    i18n.changeLanguage(v)
   }
 
-  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as SupportedCurrency
-    setCurrency(value)
+  const handleCurrencyChange = (value: string) => {
+    setCurrency(value as SupportedCurrency)
   }
 
   const handleSave = () => {
@@ -90,34 +90,22 @@ export function SettingsDropdown({ inline = false, onSaveSuccess }: SettingsDrop
             <label className="block text-xs font-medium text-muted-foreground mb-1">
               {t('settings.language', 'Language')}
             </label>
-            <select
+            <SelectSimple
               value={language}
-              onChange={handleLanguageChange}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {LOCALES.map(({ code, label }) => (
-                <option key={code} value={code}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              onValueChange={handleLanguageChange}
+              options={LOCALES.map(({ code, label }) => ({ value: code, label }))}
+            />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">
               {t('settings.currency', 'Currency')}
             </label>
-            <select
+            <SelectSimple
               value={currency}
-              onChange={handleCurrencyChange}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              onValueChange={handleCurrencyChange}
+              options={CURRENCIES.map((c) => ({ value: c.value, label: c.label }))}
+            />
           </div>
 
           {error && <p className="text-xs text-destructive">{error}</p>}

@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
+import { SelectSimple } from '@/components/ui/Select'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCustomCategories } from '@/hooks/useCategory'
 import { QUERY_KEYS } from '@/utils/constants'
@@ -248,14 +249,14 @@ export default function CategoriesPage() {
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   {t('categories.type')}
                 </label>
-                <select
-                  className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm"
+                <SelectSimple
                   value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value as 'income' | 'expense' })}
-                >
-                  <option value="income">{t('transactions.income')}</option>
-                  <option value="expense">{t('transactions.expense')}</option>
-                </select>
+                  onValueChange={(v) => setForm({ ...form, type: v as 'income' | 'expense' })}
+                  options={[
+                    { value: 'income', label: t('transactions.income') },
+                    { value: 'expense', label: t('transactions.expense') },
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -341,14 +342,14 @@ function EditCategoryPopup({
           <label className="block text-sm font-medium text-foreground mb-1.5">
             {t('categories.type')}
           </label>
-          <select
-            className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm"
+          <SelectSimple
             value={type}
-            onChange={(e) => setType(e.target.value as 'income' | 'expense')}
-          >
-            <option value="income">{t('transactions.income')}</option>
-            <option value="expense">{t('transactions.expense')}</option>
-          </select>
+            onValueChange={(v) => setType(v as 'income' | 'expense')}
+            options={[
+              { value: 'income', label: t('transactions.income') },
+              { value: 'expense', label: t('transactions.expense') },
+            ]}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">

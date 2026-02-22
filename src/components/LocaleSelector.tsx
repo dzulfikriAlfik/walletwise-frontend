@@ -4,29 +4,24 @@
 
 import { useTranslation } from 'react-i18next'
 import { LOCALES, type LocaleCode } from '@/i18n'
+import { SelectSimple } from '@/components/ui/Select'
 
 export function LocaleSelector() {
   const { i18n } = useTranslation()
+  const lang = i18n.language === 'en' || i18n.language === 'id' ? i18n.language : 'en'
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as LocaleCode
+  const handleChange = (value: string) => {
     if (value === 'en' || value === 'id') {
       i18n.changeLanguage(value)
     }
   }
 
   return (
-    <select
-      value={i18n.language}
-      onChange={handleChange}
-      className="h-9 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      aria-label="Select language"
-    >
-      {LOCALES.map(({ code, label }) => (
-        <option key={code} value={code}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <SelectSimple
+      value={lang}
+      onValueChange={handleChange}
+      options={LOCALES.map(({ code, label }) => ({ value: code, label }))}
+      className="h-9 min-h-[36px]"
+    />
   )
 }

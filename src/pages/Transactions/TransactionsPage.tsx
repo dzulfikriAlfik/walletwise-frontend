@@ -18,6 +18,7 @@ import { DatePicker } from '@/components/ui/DatePicker'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CrudPopup } from '@/components/ui/CrudPopup'
+import { SelectSimple } from '@/components/ui/Select'
 import { Link } from 'react-router-dom'
 import { useWallets } from '@/hooks/useWallet'
 import { useTransactions } from '@/hooks/useTransaction'
@@ -353,57 +354,49 @@ export default function TransactionsPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.wallet')}</label>
-              <select
-                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                value={filters.walletId ?? ''}
-                onChange={(e) =>
-                  setFilters({ ...filters, walletId: e.target.value || undefined })
+              <SelectSimple
+                value={filters.walletId ?? '__all__'}
+                onValueChange={(v) =>
+                  setFilters({ ...filters, walletId: v === '__all__' ? undefined : v })
                 }
-              >
-                <option value="">{t('transactions.allWallets')}</option>
-                {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: '__all__', label: t('transactions.allWallets') },
+                  ...wallets.map((w) => ({ value: w.id, label: w.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
-              <select
-                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                value={filters.type ?? ''}
-                onChange={(e) =>
+              <SelectSimple
+                value={filters.type ?? '__all__'}
+                onValueChange={(v) =>
                   setFilters({
                     ...filters,
-                    type: (e.target.value || undefined) as TransactionType | undefined,
+                    type: v === '__all__' ? undefined : (v as TransactionType),
                   })
                 }
-              >
-                <option value="">{t('transactions.allTypes')}</option>
-                <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
-                <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
-              </select>
+                options={[
+                  { value: '__all__', label: t('transactions.allTypes') },
+                  { value: TransactionType.INCOME, label: t('transactions.income') },
+                  { value: TransactionType.EXPENSE, label: t('transactions.expense') },
+                ]}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-              <select
-                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                value={filters.category ?? ''}
-                onChange={(e) =>
+              <SelectSimple
+                value={filters.category ?? '__all__'}
+                onValueChange={(v) =>
                   setFilters({
                     ...filters,
-                    category: e.target.value || undefined,
+                    category: v === '__all__' ? undefined : v,
                   })
                 }
-              >
-                <option value="">{t('transactions.allCategories')}</option>
-                {categoryOptions.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: '__all__', label: t('transactions.allCategories') },
+                  ...categoryOptions.map((c) => ({ value: c.id, label: c.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.from')}</label>
@@ -534,27 +527,21 @@ export default function TransactionsPage() {
         <form id="add-transaction-form" onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.wallet')}</label>
-            <select
-              required
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              value={form.walletId}
-              onChange={(e) => setForm({ ...form, walletId: e.target.value })}
-            >
-              <option value="">-- {t('transactions.wallet')} --</option>
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name} ({w.currency})
-                </option>
-              ))}
-            </select>
+            <SelectSimple
+              value={form.walletId || '__placeholder__'}
+              onValueChange={(v) => setForm({ ...form, walletId: v === '__placeholder__' ? '' : v })}
+              options={[
+                { value: '__placeholder__', label: `-- ${t('transactions.wallet')} --` },
+                ...wallets.map((w) => ({ value: w.id, label: `${w.name} (${w.currency})` })),
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
-            <select
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            <SelectSimple
               value={form.type}
-              onChange={(e) => {
-                const newType = e.target.value as TransactionType
+              onValueChange={(v) => {
+                const newType = v as TransactionType
                 setForm({
                   ...form,
                   type: newType,
@@ -564,28 +551,22 @@ export default function TransactionsPage() {
                       : expenseCategoryOptions[0]?.id ?? 'food',
                 })
               }}
-            >
-              <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
-              <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
-            </select>
+              options={[
+                { value: TransactionType.INCOME, label: t('transactions.income') },
+                { value: TransactionType.EXPENSE, label: t('transactions.expense') },
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-            <select
-              required
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            <SelectSimple
               value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            >
-              {(form.type === TransactionType.INCOME
+              onValueChange={(v) => setForm({ ...form, category: v })}
+              options={(form.type === TransactionType.INCOME
                 ? incomeCategoryOptions
                 : expenseCategoryOptions
-              ).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              ).map((c) => ({ value: c.id, label: c.name }))}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.amount')}</label>
@@ -794,33 +775,30 @@ function EditTransactionPopup({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.type')}</label>
-          <select
-            className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          <SelectSimple
             value={type}
-            onChange={(e) => {
-              const newType = e.target.value as TransactionType
+            onValueChange={(v) => {
+              const newType = v as TransactionType
               setType(newType)
               const opts = newType === TransactionType.INCOME ? incomeCategoryOptions : expenseCategoryOptions
               setCategory(opts[0]?.id ?? (newType === TransactionType.INCOME ? 'salary' : 'food'))
             }}
-          >
-            <option value={TransactionType.INCOME}>{t('transactions.income')}</option>
-            <option value={TransactionType.EXPENSE}>{t('transactions.expense')}</option>
-          </select>
+            options={[
+              { value: TransactionType.INCOME, label: t('transactions.income') },
+              { value: TransactionType.EXPENSE, label: t('transactions.expense') },
+            ]}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.category')}</label>
-          <select
-            className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          <SelectSimple
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {categoryOptionsForType.map((c: { id: string; name: string; type: string }) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setCategory}
+            options={categoryOptionsForType.map((c: { id: string; name: string; type: string }) => ({
+              value: c.id,
+              label: c.name,
+            }))}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.amount')}</label>

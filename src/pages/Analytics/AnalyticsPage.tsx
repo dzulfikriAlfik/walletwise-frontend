@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
+import { SelectSimple } from '@/components/ui/Select'
 import { useWallets } from '@/hooks/useWallet'
 import { useCategories } from '@/hooks/useCategory'
 import { useAuth } from '@/hooks/useAuth'
@@ -113,16 +114,14 @@ export default function AnalyticsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t('transactions.wallet')}</label>
-              <select
-                className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                value={walletId}
-                onChange={(e) => setWalletId(e.target.value)}
-              >
-                <option value="">{t('transactions.allWallets')}</option>
-                {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>{w.name}</option>
-                ))}
-              </select>
+              <SelectSimple
+                value={walletId || '__all__'}
+                onValueChange={(v) => setWalletId(v === '__all__' ? '' : v)}
+                options={[
+                  { value: '__all__', label: t('transactions.allWallets') },
+                  ...wallets.map((w) => ({ value: w.id, label: w.name })),
+                ]}
+              />
             </div>
           </div>
         </CardContent>

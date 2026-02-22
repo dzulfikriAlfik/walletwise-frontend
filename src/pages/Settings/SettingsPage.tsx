@@ -26,6 +26,7 @@ import { authService } from '@/services/auth.service'
 import { useFxRates } from '@/hooks/useFxRates'
 import type { SupportedCurrency, TransactionTimeRange, FirstDayOfWeek } from '@/types'
 import { format, parseISO } from 'date-fns'
+import { SelectSimple } from '@/components/ui/Select'
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation()
@@ -115,33 +116,21 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {t('settings.language', 'Language')}
             </label>
-            <select
+            <SelectSimple
               value={language}
-              onChange={(e) => setLanguage(e.target.value as LocaleCode)}
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {LOCALES.map(({ code, label }) => (
-                <option key={code} value={code}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              onValueChange={(v) => setLanguage(v as LocaleCode)}
+              options={LOCALES.map(({ code, label }) => ({ value: code, label }))}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {t('settings.currency', 'Currency')}
             </label>
-            <select
+            <SelectSimple
               value={currency}
-              onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              onValueChange={(v) => setCurrency(v as SupportedCurrency)}
+              options={CURRENCIES.map((c) => ({ value: c.value, label: c.label }))}
+            />
           </div>
         </CardContent>
       </Card>
@@ -159,19 +148,14 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {t('settings.timeRangeLabel', 'Time Range')}
             </label>
-            <select
+            <SelectSimple
               value={transactionTimeRange}
-              onChange={(e) =>
-                setTransactionTimeRange(e.target.value as TransactionTimeRange)
-              }
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {TRANSACTION_TIME_RANGES.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {t(opt.labelKey)}
-                </option>
-              ))}
-            </select>
+              onValueChange={(v) => setTransactionTimeRange(v as TransactionTimeRange)}
+              options={TRANSACTION_TIME_RANGES.map((opt) => ({
+                value: opt.value,
+                label: t(opt.labelKey),
+              }))}
+            />
             <p className="text-xs text-muted-foreground mt-1.5">
               {t('settings.timeRangeHint', 'Daily: 7 days. Weekly: weeks of current month. Monthly: months of current year.')}
             </p>
@@ -180,19 +164,14 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {t('settings.firstDayOfWeekLabel', 'First Day of Week')}
             </label>
-            <select
-              value={firstDayOfWeek}
-              onChange={(e) =>
-                setFirstDayOfWeek(parseInt(e.target.value, 10) as FirstDayOfWeek)
-              }
-              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {FIRST_DAY_OF_WEEK_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {t(opt.labelKey)}
-                </option>
-              ))}
-            </select>
+            <SelectSimple
+              value={String(firstDayOfWeek)}
+              onValueChange={(v) => setFirstDayOfWeek(parseInt(v, 10) as FirstDayOfWeek)}
+              options={FIRST_DAY_OF_WEEK_OPTIONS.map((opt) => ({
+                value: String(opt.value),
+                label: t(opt.labelKey),
+              }))}
+            />
           </div>
         </CardContent>
       </Card>
