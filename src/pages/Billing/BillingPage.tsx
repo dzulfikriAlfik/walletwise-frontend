@@ -89,7 +89,8 @@ export default function BillingPage() {
         })()
       : rawTier
 
-  const hasUsedProTrial = rawTier === SubscriptionTier.PRO_TRIAL
+  // Show Pro Trial only for free users; hide when already on trial or subscribed (Pro/Pro Plus)
+  const showProTrial = rawTier === SubscriptionTier.FREE
 
   const handleUpgrade = (tier: 'pro_trial' | 'pro' | 'pro_plus') => {
     setSelectedPlan(tier)
@@ -185,8 +186,8 @@ export default function BillingPage() {
           effectiveDisplayTier={effectiveDisplayTier}
           billingPeriod={billingPeriod}
           onUpgrade={() => handleUpgrade('pro')}
-          onTrial={!hasUsedProTrial ? () => handleUpgrade('pro_trial') : undefined}
-          canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE}
+          onTrial={showProTrial ? () => handleUpgrade('pro_trial') : undefined}
+          canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE || effectiveDisplayTier === SubscriptionTier.PRO_TRIAL}
         />
 
         {/* Pro+ Plan */}
@@ -196,7 +197,11 @@ export default function BillingPage() {
           effectiveDisplayTier={effectiveDisplayTier}
           billingPeriod={billingPeriod}
           onUpgrade={() => handleUpgrade('pro_plus')}
-          canUpgrade={effectiveDisplayTier === SubscriptionTier.FREE || effectiveDisplayTier === SubscriptionTier.PRO}
+          canUpgrade={
+            effectiveDisplayTier === SubscriptionTier.FREE ||
+            effectiveDisplayTier === SubscriptionTier.PRO_TRIAL ||
+            effectiveDisplayTier === SubscriptionTier.PRO
+          }
         />
       </div>
 

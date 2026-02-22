@@ -50,8 +50,6 @@ From [docs/ipa/ipa-checklist.md](ipa/ipa-checklist.md):
 
 | Priority   | Item                     |
 |------------|--------------------------|
-| ~~**High**~~   | ~~CSV/Excel export UI~~ ✓      |
-| ~~**High**~~   | ~~Analytics dashboard UI~~ ✓   |
 | **Medium** | Profile page (optional)  |
 | **Lower**  | Unit & integration tests |
 | **Lower**  | CI pipeline              |

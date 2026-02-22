@@ -457,7 +457,7 @@ export default function TransactionsPage() {
                           }`}
                         >
                           {tx.type === TransactionType.INCOME ? '+' : '−'}
-                          {formatCurrency(convertCurrency(tx.amount, tx.wallet?.currency ?? 'USD', selectedCurrency), selectedCurrency)}
+                          {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
                         </p>
                         <div className="flex gap-2">
                           <Button

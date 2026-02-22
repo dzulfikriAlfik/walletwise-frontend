@@ -232,7 +232,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     {tx.type === TransactionType.INCOME ? '+' : '−'}
-                    {formatCurrency(convertCurrency(tx.amount, tx.wallet?.currency ?? 'USD', selectedCurrency), selectedCurrency)}
+                    {formatCurrency(tx.amount, tx.wallet?.currency ?? 'USD')}
                   </p>
                 </div>
               ))}
