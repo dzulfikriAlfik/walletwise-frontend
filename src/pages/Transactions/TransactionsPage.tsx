@@ -68,10 +68,16 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     const xenditPayment = searchParams.get('xenditPayment')
-    const tier = searchParams.get('tier')
-    if (xenditPayment === 'success' && tier) {
+    const midtransPayment = searchParams.get('midtransPayment')
+    const tierFromUrl = searchParams.get('tier')
+    const tierFromStorage = sessionStorage.getItem('pendingPaymentTier')
+    const tier = tierFromUrl ?? tierFromStorage ?? ''
+    if (xenditPayment === 'success' || midtransPayment === 'success') {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER })
-      setPaymentSuccessPopup({ tier })
+      if (midtransPayment === 'success' && tierFromStorage) {
+        sessionStorage.removeItem('pendingPaymentTier')
+      }
+      setPaymentSuccessPopup({ tier: tier || 'premium' })
     }
   }, [searchParams, queryClient])
 
@@ -79,6 +85,7 @@ export default function TransactionsPage() {
     setPaymentSuccessPopup(null)
     const next = new URLSearchParams(searchParams)
     next.delete('xenditPayment')
+    next.delete('midtransPayment')
     next.delete('tier')
     setSearchParams(next.size ? next : {}, { replace: true })
   }

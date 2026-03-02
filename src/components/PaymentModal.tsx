@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 
-export type PaymentGateway = 'stripe' | 'xendit'
+export type PaymentGateway = 'stripe' | 'xendit' | 'midtrans'
 export type PaymentMethod = 'card' | 'invoice' | 'va' | 'ewallet' | 'qris'
 
 interface PaymentModalProps {
@@ -40,10 +40,14 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const { t } = useTranslation()
   const [showStripeWarning, setShowStripeWarning] = useState(false)
+  const [showXenditWarning, setShowXenditWarning] = useState(false)
 
   // Reset warning when modal closes
   useEffect(() => {
-    if (!isOpen) setShowStripeWarning(false)
+    if (!isOpen) {
+      setShowStripeWarning(false)
+      setShowXenditWarning(false)
+    }
   }, [isOpen])
 
   // Scroll lock when modal is open
@@ -116,7 +120,7 @@ export function PaymentModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onSelectGateway('xendit', 'invoice')}
+                    onClick={() => setShowXenditWarning(true)}
                     disabled={isLoading}
                     className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
                   >
@@ -124,6 +128,18 @@ export function PaymentModal({
                     <div>
                       <p className="font-medium">{t('billing.xendit')}</p>
                       <p className="text-sm text-muted-foreground">{t('billing.xenditDesc')}</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectGateway('midtrans', 'invoice')}
+                    disabled={isLoading}
+                    className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
+                  >
+                    <span className="text-2xl">🏪</span>
+                    <div>
+                      <p className="font-medium">{t('billing.midtrans')}</p>
+                      <p className="text-sm text-muted-foreground">{t('billing.midtransDesc')}</p>
                     </div>
                   </button>
                 </div>
@@ -156,6 +172,33 @@ export function PaymentModal({
             <Button
               className="w-full"
               onClick={() => setShowStripeWarning(false)}
+              disabled={isLoading}
+            >
+              {t('common.ok')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Xendit development warning popup */}
+      {showXenditWarning && (
+        <div
+          className="absolute inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40"
+          onClick={(e) => e.target === e.currentTarget && setShowXenditWarning(false)}
+        >
+          <div
+            className="bg-card rounded-xl shadow-xl border border-border p-6 max-w-sm w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
+              ⚠️ {t('billing.xenditDevWarning')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('billing.xenditDevWarningDesc')}
+            </p>
+            <Button
+              className="w-full"
+              onClick={() => setShowXenditWarning(false)}
               disabled={isLoading}
             >
               {t('common.ok')}

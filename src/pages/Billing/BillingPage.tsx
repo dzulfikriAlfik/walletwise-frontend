@@ -66,6 +66,10 @@ export default function BillingPage() {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WALLETS })
         setSelectedPlan(null)
       } else if (data.redirectUrl) {
+        // Store tier for Midtrans redirect - used when user returns from payment page
+        if (selectedPlan) {
+          sessionStorage.setItem('pendingPaymentTier', selectedPlan)
+        }
         window.location.href = data.redirectUrl
       } else if (data.invoiceUrl) {
         if (data.message === 'Reusing existing pending invoice') {
@@ -101,7 +105,7 @@ export default function BillingPage() {
     setSelectedPlan(tier)
   }
 
-  const handleSelectGateway = (gateway: 'stripe' | 'xendit', method: 'card' | 'invoice' | 'va' | 'ewallet' | 'qris') => {
+  const handleSelectGateway = (gateway: 'stripe' | 'xendit' | 'midtrans', method: 'card' | 'invoice' | 'va' | 'ewallet' | 'qris') => {
     if (!selectedPlan) return
     createPaymentMutation.mutate({
       targetTier: selectedPlan,

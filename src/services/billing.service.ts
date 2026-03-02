@@ -49,7 +49,7 @@ export const billingService = {
   createPayment: async (params: {
     targetTier: 'pro_trial' | 'pro' | 'pro_plus'
     billingPeriod: 'monthly' | 'yearly'
-    gateway: 'stripe' | 'xendit'
+    gateway: 'stripe' | 'xendit' | 'midtrans'
     method: 'card' | 'invoice' | 'va' | 'ewallet' | 'qris'
   }): Promise<CreatePaymentResult> => {
     const { data } = await apiClient.post<ApiResponse<CreatePaymentResult>>('/payments/create', params)
