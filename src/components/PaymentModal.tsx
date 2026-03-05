@@ -40,13 +40,13 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const { t } = useTranslation()
   const [showStripeWarning, setShowStripeWarning] = useState(false)
-  const [showXenditWarning, setShowXenditWarning] = useState(false)
+  const [showMidtransWarning, setShowMidtransWarning] = useState(false)
 
   // Reset warning when modal closes
   useEffect(() => {
     if (!isOpen) {
       setShowStripeWarning(false)
-      setShowXenditWarning(false)
+      setShowMidtransWarning(false)
     }
   }, [isOpen])
 
@@ -120,7 +120,7 @@ export function PaymentModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowXenditWarning(true)}
+                    onClick={() => onSelectGateway('xendit', 'invoice')}
                     disabled={isLoading}
                     className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
                   >
@@ -132,7 +132,7 @@ export function PaymentModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onSelectGateway('midtrans', 'invoice')}
+                    onClick={() => setShowMidtransWarning(true)}
                     disabled={isLoading}
                     className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
                   >
@@ -180,25 +180,25 @@ export function PaymentModal({
         </div>
       )}
 
-      {/* Xendit development warning popup */}
-      {showXenditWarning && (
+      {/* Midtrans development warning popup */}
+      {showMidtransWarning && (
         <div
           className="absolute inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40"
-          onClick={(e) => e.target === e.currentTarget && setShowXenditWarning(false)}
+          onClick={(e) => e.target === e.currentTarget && setShowMidtransWarning(false)}
         >
           <div
             className="bg-card rounded-xl shadow-xl border border-border p-6 max-w-sm w-full space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
-              ⚠️ {t('billing.xenditDevWarning')}
+              ⚠️ {t('billing.midtransDevWarning')}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('billing.xenditDevWarningDesc')}
+              {t('billing.midtransDevWarningDesc')}
             </p>
             <Button
               className="w-full"
-              onClick={() => setShowXenditWarning(false)}
+              onClick={() => setShowMidtransWarning(false)}
               disabled={isLoading}
             >
               {t('common.ok')}

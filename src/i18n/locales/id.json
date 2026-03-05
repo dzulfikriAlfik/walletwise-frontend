@@ -116,6 +116,8 @@
     "xenditDevWarningDesc": "Fitur pembayaran Xendit masih dalam tahap pengembangan. Anda mungkin mengalami kendala.",
     "midtrans": "Midtrans",
     "midtransDesc": "Bayar dengan VA, E-wallet, QRIS, kartu (Indonesia)",
+    "midtransDevWarning": "Fitur dalam pengembangan",
+    "midtransDevWarningDesc": "Fitur pembayaran Midtrans masih dalam tahap pengembangan. Anda mungkin mengalami kendala.",
     "paymentFailed": "Pembayaran gagal",
     "pendingPaymentTitle": "Pembayaran tertunda",
     "pendingPaymentDesc": "Anda sudah memiliki pembayaran tertunda untuk plan ini. Selesaikan atau tunggu hingga kedaluwarsa sebelum membuat yang baru.",
