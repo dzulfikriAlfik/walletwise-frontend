@@ -25,6 +25,7 @@ import { CURRENCIES, QUERY_KEYS, SUBSCRIPTION_LIMITS } from '@/utils/constants'
 import { convertCurrency } from '@/utils/currency'
 import { TotalBalanceCard } from '@/components/TotalBalanceCard'
 import { SubscriptionTier } from '@/types'
+import { formatCurrency } from '@/utils/format'
 
 export default function WalletsPage() {
   const { t } = useTranslation()
@@ -193,12 +194,6 @@ export default function WalletsPage() {
 
   const handleDeleteCancel = () => {
     if (!isDeleting) setDeleteTarget(null)
-  }
-
-  const formatCurrency = (amount: number, currency: string) => {
-    const curr = CURRENCIES.find((c) => c.value === currency)
-    const symbol = curr?.symbol || currency
-    return `${symbol} ${amount.toLocaleString()}`
   }
 
   if (isLoading) {

@@ -725,8 +725,6 @@ export default function TransactionsPage() {
 function TransactionRow({
   tx,
   getCategoryLabel,
-  selectedCurrency,
-  rates,
   onEdit,
   onDelete,
   t,
@@ -739,12 +737,6 @@ function TransactionRow({
   onDelete: () => void
   t: (key: string) => string
 }) {
-  const amount =
-    tx.wallet?.currency && tx.wallet.currency !== selectedCurrency
-      ? convertCurrency(tx.amount, tx.wallet.currency, selectedCurrency, rates)
-      : tx.amount
-  const displayCurrency =
-    tx.wallet?.currency === selectedCurrency ? tx.wallet.currency : selectedCurrency
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4 px-4 first:pt-4">
@@ -761,7 +753,7 @@ function TransactionRow({
           }`}
         >
           {tx.type === TransactionType.INCOME ? '+' : '−'}
-          {formatCurrency(amount, displayCurrency)}
+          {formatCurrency(tx.amount, tx.wallet?.currency)}
         </p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onEdit}>
